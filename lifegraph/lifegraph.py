@@ -21,14 +21,17 @@ for key, val in mcolors.CSS4_COLORS.items():
         colors.append((key, val))
 
 def random_color():
+    """ """
     c = colors[random.randint(0, len(colors) - 1)]
     return c[1]
 
 class Side(Enum):
+    """ """
     LEFT = 1
     RIGHT = 2
 
 class Point:
+    """ """
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -40,6 +43,7 @@ class Point:
         return f"({self.x}, {self.y})"
 
 class DatePosition(Point):
+    """ """
     def __init__(self, x, y, week, year_of_life, date):
         super().__init__(x, y)
         self.week = week
@@ -53,6 +57,7 @@ class DatePosition(Point):
         return f"DatePosition: year({self.year_of_life}), week({self.week}), date({self.date}) at point {super().__repr__()}"
 
 class Marker(Point):
+    """ """
     def __init__(self, x, y, marker = 's', fillstyle = 'none', color = 'black'):
         super().__init__(x, y)
         self.marker = marker
@@ -66,6 +71,7 @@ class Marker(Point):
         return f"Marker at {super().__repr__()}"
 
 class Annotation(Point):
+    """ """
     # the default for marker size is 10.0, which should be the default for matplotlib text objects
     def __init__(self, x, y, date, text = 'none', marker = 's', color = 'black', bbox = None, event_point = None, font_size=10.0, draw_point = True, shrink = 0):
         super().__init__(x, y)
@@ -80,14 +86,22 @@ class Annotation(Point):
         self.shrink = shrink
 
     def set_metadata(self, bbox):
+        """
+
+        :param bbox: 
+
+        """
         self.bbox = bbox
 
     def overlaps(self, that):
-        """ Check that the two Bboxes don't overlap
-
-        They don't overlap if 
+        """Check that the two Bboxes don't overlap
+        
+        They don't overlap if
             1) one rectangle's left side is strictly to the right other's right side
             2) one rectangle's top side is stricly bellow the other's bottom side
+
+        :param that: 
+
         """
         if (not isinstance(that, Annotation)):
             raise ValueError("Argument for intersects should be an annotation")
@@ -102,11 +116,15 @@ class Annotation(Point):
         return True
     
     def is_within_epsilong_of(self, that, epsilon):
-        """ Check that the two Bboxes don't overlap
-
-        They don't overlap if 
+        """Check that the two Bboxes don't overlap
+        
+        They don't overlap if
             1) one rectangle's left side is strictly to the right other's right side
             2) one rectangle's top side is stricly bellow the other's bottom side
+
+        :param that: 
+        :param epsilon: 
+
         """
         if (not isinstance(that, Annotation)):
             raise ValueError("Argument for intersects should be an annotation")
@@ -121,6 +139,12 @@ class Annotation(Point):
         return True
 
     def xy_overlapping_width_height(self, that, epsilon):
+        """
+
+        :param that: 
+        :param epsilon: 
+
+        """
         if (not isinstance(that, Annotation)):
             raise ValueError("Argument for intersects should be an annotation")
 
@@ -131,11 +155,21 @@ class Annotation(Point):
         return (width + epsilon, height + epsilon)
     
     def update_X_with_correction(self, correction):
+        """
+
+        :param correction: 
+
+        """
             self.x += correction[0]
             self.bbox.x0 += correction[0]
             self.bbox.x1 += correction[0]
 
     def update_Y_with_correction(self, correction):
+        """
+
+        :param correction: 
+
+        """
         self.y += correction[1]
         self.bbox.y0 += correction[1]
         self.bbox.y1 += correction[1]
@@ -147,6 +181,7 @@ class Annotation(Point):
         return f"Annotation '{self.text}' at {super().__repr__()}"
 
 class Era():
+    """ """
     def __init__(self, text, start, end, color):
         self.text = text
         self.start = start
@@ -160,6 +195,7 @@ class Era():
         return f"Era '{self.text}' starting at {self.start}, ending at {self.end}"
 
 class Papersize:
+    """ """
     # all sizes are in inches
     _4A0 = [66.2, 93.6]
     _2A0 = [46.8, 66.2]
@@ -182,6 +218,7 @@ class Papersize:
     Tabloid = [11.0, 17.0]
 
 class Lifegraph:
+    """ """
     def __init__(self, birthdate, size = Papersize.A3, dpi = 300, label_space_epsilon = .2, show_watermark = False):
         logging.info(f"Initializing lifegraph")
         if birthdate is None or not isinstance(birthdate, datetime.date):
@@ -240,6 +277,7 @@ class Lifegraph:
         self.era_spans = []
 
     def draw(self):
+        """ """
         self.isDrawn = True
         plt.rc('text', usetex=True)
         xs = np.arange(1, self.xmax+1) 
@@ -264,6 +302,7 @@ class Lifegraph:
         self.ax.set_aspect('equal', adjustable='box')
 
     def format_xaxis(self):
+        """ """
         self.ax.set_xlim(self.xlims)
         # put x ticks on top 
         xticks = [1]
@@ -277,6 +316,7 @@ class Lifegraph:
         self.ax.xaxis.set_tick_params(width=0, direction='out', pad=self.inner_padx)
 
     def format_yaxis(self):
+        """ """
         self.ax.set_ylim(self.ylims)
         # set y ticks
         yticks = [*range(0,self.ymax,5)]
@@ -287,6 +327,7 @@ class Lifegraph:
         self.ax.invert_yaxis()
 
     def draw_annotations(self):
+        """ """
         final = []
         final.extend(self.resolve_annotations(self.annotations_left, Side.LEFT))
         final.extend(self.resolve_annotations(self.annotations_right, Side.RIGHT))
@@ -302,6 +343,7 @@ class Lifegraph:
                                     shrinkB = a.shrink))
 
     def draw_eras(self):
+        """ """
         xmin = self.ax.transLimits.transform((1-.5, 0))[0]
         xmax = self.ax.transLimits.transform((self.xmax+.5, 0))[0]
         for era in self.eras:
@@ -316,6 +358,7 @@ class Lifegraph:
                     self.ax.axhspan(y-.5, y+.5, facecolor=era.color, alpha=self.era_alpha, xmin=xmin, xmax=xmax)
 
     def draw_era_spans(self):
+        """ """
         for era in self.era_spans:
             radius = .5
             circle1 = plt.Circle((era.start.x, era.start.y), radius, color=era.color, fill=False, lw=self.annotation_edge_width)
@@ -347,12 +390,19 @@ class Lifegraph:
             self.ax.add_line(l)
 
     def draw_watermark(self):
+        """ """
         if self.show_watermark:
             self.fig.text(0.5, 0.5, self.watermark_text,
             fontsize=100, color='gray',
             ha='center', va='center', alpha=0.3, rotation = 65, transform = self.ax.transAxes)
 
     def resolve_annotations(self, annotations, side):
+        """
+
+        :param annotations: 
+        :param side: 
+
+        """
         for a in annotations:
             # first, get the bounds
             self.set_annotation_metadata(a)
@@ -384,27 +434,41 @@ class Lifegraph:
         return final
 
     def add_90(self):
+        """ """
         ax2 = self.ax.twinx()
         ax2.set_yticklabels([90], fontdict={'fontweight': 'bold', 'fontsize': 20})
         ax2.yaxis.set_tick_params(width=0)
         ax2.set_frame_on(False)
 
     def show(self):
+        """ """
         if not self.isDrawn:
             self.draw()
         self.ax.show()
 
     def save(self, name, transparent=False):
+        """
+
+        :param name: 
+        :param transparent:  (Default value = False)
+
+        """
         logging.info(f"Saving lifegraph with name {name}.")
         if not self.isDrawn:
             self.draw()
         plt.savefig(name, transparent=transparent, bbox_inches = "tight")
 
     def close(self):
+        """ """
         if self.isDrawn:
             self.ax.close()
 
     def set_annotation_metadata(self, a):
+        """
+
+        :param a: 
+
+        """
         # put the text on the plot temporarily so that we can determine the width of the text
         t = self.ax.text(a.x, a.y, a.text, transform = self.ax.transData, ha='center', va='center', size=a.font_size)
 
@@ -419,6 +483,15 @@ class Lifegraph:
         t.remove()
 
     def add_life_event(self, text, date, color, hint = None, side = None):
+        """
+
+        :param text: 
+        :param date: 
+        :param color: 
+        :param hint:  (Default value = None)
+        :param side:  (Default value = None)
+
+        """
         logging.info(f"Adding life event '{text}' with color {color}")
         if (date < self.birthdate or date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
@@ -452,6 +525,16 @@ class Lifegraph:
             self.annotations_left.append(a)
     
     def add_era(self, text, start_date, end_date, color, hint = None, side = None):
+        """
+
+        :param text: 
+        :param start_date: 
+        :param end_date: 
+        :param color: 
+        :param hint:  (Default value = None)
+        :param side:  (Default value = None)
+
+        """
         logging.info(f"Adding era '{text}' with color {color}")
         if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
@@ -493,6 +576,16 @@ class Lifegraph:
             self.annotations_left.append(a)
     
     def add_era_span(self, text, start_date, end_date, color = 'g', hint = None, side = None):
+        """
+
+        :param text: 
+        :param start_date: 
+        :param end_date: 
+        :param color:  (Default value = 'g')
+        :param hint:  (Default value = None)
+        :param side:  (Default value = None)
+
+        """
         logging.info(f"Adding era span '{text}' with color {color}")
         if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
@@ -531,6 +624,11 @@ class Lifegraph:
                             color=color, event_point=Point(middle_of_line_x, middle_of_line_y), font_size=20.0, draw_point=False))
 
     def add_watermark(self, text):
+        """
+
+        :param text: 
+
+        """
         self.watermark_text = text
         self.show_watermark = True
     
