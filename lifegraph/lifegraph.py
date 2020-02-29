@@ -21,17 +21,17 @@ for key, val in mcolors.CSS4_COLORS.items():
         colors.append((key, val))
 
 def random_color():
-    """ """
+    """ Returns a random color defined in matplotlib.colors.BASE_COLORS or matpotlib.colors.CSS4_COLORS """
     c = colors[random.randint(0, len(colors) - 1)]
     return c[1]
 
 class Side(Enum):
-    """ """
+    """ Visually indicates the left or right of the plot """
     LEFT = 1
     RIGHT = 2
 
 class Point:
-    """ """
+    """ A point class that holds the x and y coordinates in data units """
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -43,7 +43,7 @@ class Point:
         return f"({self.x}, {self.y})"
 
 class DatePosition(Point):
-    """ """
+    """ A class to hold the week, year of life, and date assocaited with a Point """
     def __init__(self, x, y, week, year_of_life, date):
         super().__init__(x, y)
         self.week = week
@@ -57,7 +57,7 @@ class DatePosition(Point):
         return f"DatePosition: year({self.year_of_life}), week({self.week}), date({self.date}) at point {super().__repr__()}"
 
 class Marker(Point):
-    """ """
+    """ A class to indicate how and where to draw a marker """
     def __init__(self, x, y, marker = 's', fillstyle = 'none', color = 'black'):
         super().__init__(x, y)
         self.marker = marker
@@ -71,7 +71,7 @@ class Marker(Point):
         return f"Marker at {super().__repr__()}"
 
 class Annotation(Point):
-    """ """
+    """ A class to hold the text of an annotation with methods to help layout the text. """
     # the default for marker size is 10.0, which should be the default for matplotlib text objects
     def __init__(self, x, y, date, text = 'none', marker = 's', color = 'black', bbox = None, event_point = None, font_size=10.0, draw_point = True, shrink = 0):
         super().__init__(x, y)
@@ -86,9 +86,9 @@ class Annotation(Point):
         self.shrink = shrink
 
     def set_metadata(self, bbox):
-        """
+        """ Set the bounding box of an annotation
 
-        :param bbox: 
+        :param bbox: a matplotlib.transforms.Bbox instance
 
         """
         self.bbox = bbox
@@ -100,7 +100,7 @@ class Annotation(Point):
             1) one rectangle's left side is strictly to the right other's right side
             2) one rectangle's top side is stricly bellow the other's bottom side
 
-        :param that: 
+        :param that: an Annotation
 
         """
         if (not isinstance(that, Annotation)):
@@ -122,8 +122,8 @@ class Annotation(Point):
             1) one rectangle's left side is strictly to the right other's right side
             2) one rectangle's top side is stricly bellow the other's bottom side
 
-        :param that: 
-        :param epsilon: 
+        :param that: An Annotation
+        :param epsilon: A real number to define the tolerance for how close the label text can be
 
         """
         if (not isinstance(that, Annotation)):
@@ -139,10 +139,10 @@ class Annotation(Point):
         return True
 
     def xy_overlapping_width_height(self, that, epsilon):
-        """
+        """ Detmerine by how much the two annotation bounding boxes overlap
 
-        :param that: 
-        :param epsilon: 
+        :param that: an Annotation
+        :param epsilon: A real number that will add a buffer space between the two label text bounding boxes
 
         """
         if (not isinstance(that, Annotation)):
@@ -155,19 +155,19 @@ class Annotation(Point):
         return (width + epsilon, height + epsilon)
     
     def update_X_with_correction(self, correction):
-        """
+        """ Move the label text in the x direction according to the value in correction
 
-        :param correction: 
+        :param correction: a tuple of real number where correction[0] determines by how much the x position of the label should move
 
         """
-            self.x += correction[0]
-            self.bbox.x0 += correction[0]
-            self.bbox.x1 += correction[0]
+        self.x += correction[0]
+        self.bbox.x0 += correction[0]
+        self.bbox.x1 += correction[0]
 
     def update_Y_with_correction(self, correction):
-        """
+        """ Move the label text in the y direction according to the value in correction
 
-        :param correction: 
+        :param correction: a tuple of real number where correction[1] determines by how much the y position of the label should move
 
         """
         self.y += correction[1]
@@ -181,7 +181,7 @@ class Annotation(Point):
         return f"Annotation '{self.text}' at {super().__repr__()}"
 
 class Era():
-    """ """
+    """ A class which shows a highlighted area on the graph to indicate a span of time"""
     def __init__(self, text, start, end, color):
         self.text = text
         self.start = start
@@ -195,7 +195,7 @@ class Era():
         return f"Era '{self.text}' starting at {self.start}, ending at {self.end}"
 
 class Papersize:
-    """ """
+    """ A class holding papersize in inches """
     # all sizes are in inches
     _4A0 = [66.2, 93.6]
     _2A0 = [46.8, 66.2]
@@ -218,7 +218,7 @@ class Papersize:
     Tabloid = [11.0, 17.0]
 
 class Lifegraph:
-    """ """
+    """ This class will represent your life as a graph of boxes """
     def __init__(self, birthdate, size = Papersize.A3, dpi = 300, label_space_epsilon = .2, show_watermark = False):
         logging.info(f"Initializing lifegraph")
         if birthdate is None or not isinstance(birthdate, datetime.date):
