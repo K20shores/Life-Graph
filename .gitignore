@@ -1,0 +1,4 @@
+app.log
+venv
+.DS_Store
+.vscode
