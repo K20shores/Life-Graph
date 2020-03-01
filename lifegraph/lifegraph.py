@@ -73,8 +73,8 @@ class Marker(Point):
 class Annotation(Point):
     """ A class to hold the text of an annotation with methods to help layout the text. """
     # the default for marker size is 10.0, which should be the default for matplotlib text objects
-    def __init__(self, x, y, date, text = 'none', marker = 's', color = 'black', bbox = None, event_point = None, font_size=10.0, draw_point = True, shrink = 0):
-        super().__init__(x, y)
+    def __init__(self, date, text, label_point, marker = 's', color = 'black', bbox = None, event_point = None, font_size=10.0, draw_point = True, shrink = 0):
+        super().__init__(label_point.x, label_point.y)
         self.date = date
         self.text = text
         self.marker = marker
@@ -225,7 +225,6 @@ class Lifegraph:
             raise ValueError("birthdate must be a valid datetime.date object")
 
         self.birthdate = birthdate
-        self.isDrawn = False
 
         # figure size and resolution
         self.size = size
@@ -276,9 +275,187 @@ class Lifegraph:
         self.eras = []
         self.era_spans = []
 
-    def draw(self):
+    def add_90(self):
+        """ Places the text '90' on the bottom right of the plot """
+        ax2 = self.ax.twinx()
+        ax2.set_yticklabels([90], fontdict={'fontweight': 'bold', 'fontsize': 20})
+        ax2.yaxis.set_tick_params(width=0)
+        ax2.set_frame_on(False)
+
+    def add_life_event(self, text, date, color, hint = None, side = None):
+        """
+
+        :param text: 
+        :param date: 
+        :param color: 
+        :param hint:  (Default value = None)
+        :param side:  (Default value = None)
+
+        """
+        logging.info(f"Adding life event '{text}' with color {color}")
+        if (date < self.birthdate or date > (relativedelta(years=self.ymax) + self.birthdate)):
+            raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
+        if (hint is not None and side is not None):
+            raise ValueError(f"Hint and side are mutually exclusive arguments. Specify only one of them.")
+
+        week = int(np.floor((date - self.birthdate).days / 7)) + 1
+        x = week % self.xmax
+        y = int(np.floor(week / self.xmax))
+
+        hint = self.__sanitize_hint(hint)
+        self.data.append(Marker(x, y, color=color))
+
+        labelx = self.xmax if (x > self.xmax / 2) else 0
+        labely = y
+
+        if hint is not None:
+            lablex = hint.x
+            labely = hint.y
+        
+        if side is not None:
+            if side == Side.LEFT:
+                labelx = 0
+            else:
+                labelx = self.xmax
+        
+        label_point = Point(labelx, labely)
+
+        a = Annotation(date, text, label_point=label_point, color=color, event_point=Point(x, y), shrink = self.annotation_marker_size / 2)
+        if (labelx > self.xmax / 2):
+            self.annotations_right.append(a)
+        else:
+            self.annotations_left.append(a)
+    
+    def add_era(self, text, start_date, end_date, color, hint = None, side = None):
+        """
+
+        :param text: 
+        :param start_date: 
+        :param end_date: 
+        :param color: 
+        :param hint:  (Default value = None)
+        :param side:  (Default value = None)
+
+        """
+        logging.info(f"Adding era '{text}' with color {color}")
+        if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
+            raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
+        if (end_date < self.birthdate or end_date > (relativedelta(years=self.ymax) + self.birthdate)):
+            raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
+        if (hint is not None and side is not None):
+            raise ValueError(f"Hint and side are mutually exclusive arguments. Specify only one of them.")
+
+        hint = self.__sanitize_hint(hint)
+        start_position = self.__to_date_position(start_date)
+        end_position = self.__to_date_position(end_date)
+
+        self.eras.append(Era(text, start_position, end_position, color))
+
+        # now add an annotation for the label
+        labelx = self.xmax
+        labely = np.floor(np.average((start_position.y, end_position.y)))
+        if hint is not None:
+            labelx = hint.x
+            labely = hint.y
+
+        if side is not None:
+            if side == Side.LEFT:
+                labelx = 0
+            else:
+                labelx = self.xmax
+
+        label_point = Point(labelx, labely)
+        # when sorting the annotatio the date is used
+        # choose the middle date so that the annotation ends up 
+        # as close to the middle of the era as possible
+        # if no hint was provided
+        middle_date = start_date + (end_date - start_date)/2
+
+        a = Annotation(middle_date, text,label_point=label_point, color=color, event_point=label_point, font_size=20.0, draw_point=False, shrink=self.era_shrink)
+        if (labelx > self.xmax / 2):
+            self.annotations_right.append(a)
+        else:
+            self.annotations_left.append(a)
+    
+    def add_era_span(self, text, start_date, end_date, color = 'g', hint = None, side = None):
+        """
+
+        :param text: 
+        :param start_date: 
+        :param end_date: 
+        :param color:  (Default value = 'g')
+        :param hint:  (Default value = None)
+        :param side:  (Default value = None)
+
+        """
+        logging.info(f"Adding era span '{text}' with color {color}")
+        if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
+            raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
+        if (end_date < self.birthdate or end_date > (relativedelta(years=self.ymax) + self.birthdate)):
+            raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
+        if (hint is not None and side is not None):
+            raise ValueError(f"Hint and side are mutually exclusive arguments. Specify only one of them.")
+
+        hint = self.__sanitize_hint(hint)
+        start_position = self.__to_date_position(start_date)
+        end_position = self.__to_date_position(end_date)
+
+        # this will put a dumbell onto the graph spanning the era
+        self.era_spans.append(Era(text, start_position, end_position, color))
+
+        # now add an annotation for the label
+        labelx = self.xmax
+        labely = np.floor(np.average((start_position.y, end_position.y)))
+        if hint is not None:
+            labelx = hint.x
+            labely = hint.y
+        
+        if side is not None:
+            if side == Side.LEFT:
+                labelx = 0
+            else:
+                labelx = self.xmax
+
+        label_point = Point(labelx, labely)
+        middle_date = start_date + (end_date - start_date)/2
+
+        middle_of_line_x = np.average((start_position.x, end_position.x))
+        middle_of_line_y = np.average((start_position.y, end_position.y))
+        event_point = Point(middle_of_line_x, middle_of_line_y)
+        
+        self.annotations_right.append(Annotation(middle_date, text, label_point=label_point,
+                            color=color, event_point=event_point, font_size=20.0, draw_point=False))
+
+    def add_watermark(self, text):
+        """
+
+        :param text: 
+
+        """
+        self.watermark_text = text
+        self.show_watermark = True
+
+    def show(self):
         """ """
-        self.isDrawn = True
+        self.ax.show()
+
+    def close(self):
+        """ """
+        self.ax.close()
+
+    def save(self, name, transparent=False):
+        """
+
+        :param name: 
+        :param transparent:  (Default value = False)
+
+        """
+        logging.info(f"Saving lifegraph with name {name}.")
+        self.__draw()
+        plt.savefig(name, transparent=transparent, bbox_inches = "tight")
+
+    def __draw(self):
+        """ """
         plt.rc('text', usetex=True)
         xs = np.arange(1, self.xmax+1) 
         ys = [np.arange(0, self.ymax) for i in range(self.xmax)]
@@ -288,20 +465,20 @@ class Lifegraph:
         for point in self.data:
             self.ax.plot(point.x, point.y, color=point.color, marker=point.marker, fillstyle = point.fillstyle, linestyle='none', mew=self.grid_mew) 
 
-        self.format_xaxis()
-        self.format_yaxis()
+        self.__format_xaxis()
+        self.__format_yaxis()
 
-        self.draw_annotations()
-        self.draw_eras()
-        self.draw_era_spans()
-        self.draw_watermark()
+        self.__draw_annotations()
+        self.__draw_eras()
+        self.__draw_era_spans()
+        self.__draw_watermark()
 
         # hide the horizontal and vertical lines
         self.ax.set_frame_on(False)
 
         self.ax.set_aspect('equal', adjustable='box')
 
-    def format_xaxis(self):
+    def __format_xaxis(self):
         """ """
         self.ax.set_xlim(self.xlims)
         # put x ticks on top 
@@ -315,7 +492,7 @@ class Lifegraph:
         self.ax.xaxis.set_label_coords(0.35,1.02)
         self.ax.xaxis.set_tick_params(width=0, direction='out', pad=self.inner_padx)
 
-    def format_yaxis(self):
+    def __format_yaxis(self):
         """ """
         self.ax.set_ylim(self.ylims)
         # set y ticks
@@ -326,11 +503,11 @@ class Lifegraph:
         self.ax.yaxis.set_tick_params(width=0, direction='in', pad=self.inner_pady)
         self.ax.invert_yaxis()
 
-    def draw_annotations(self):
+    def __draw_annotations(self):
         """ """
         final = []
-        final.extend(self.resolve_annotations(self.annotations_left, Side.LEFT))
-        final.extend(self.resolve_annotations(self.annotations_right, Side.RIGHT))
+        final.extend(self.__resolve_annotations(self.annotations_left, Side.LEFT))
+        final.extend(self.__resolve_annotations(self.annotations_right, Side.RIGHT))
 
         for a in final:
             if a.draw_point:
@@ -342,7 +519,7 @@ class Lifegraph:
                                     color=a.color,
                                     shrinkB = a.shrink))
 
-    def draw_eras(self):
+    def __draw_eras(self):
         """ """
         xmin = self.ax.transLimits.transform((1-.5, 0))[0]
         xmax = self.ax.transLimits.transform((self.xmax+.5, 0))[0]
@@ -357,7 +534,7 @@ class Lifegraph:
                 else:
                     self.ax.axhspan(y-.5, y+.5, facecolor=era.color, alpha=self.era_alpha, xmin=xmin, xmax=xmax)
 
-    def draw_era_spans(self):
+    def __draw_era_spans(self):
         """ """
         for era in self.era_spans:
             radius = .5
@@ -389,14 +566,14 @@ class Lifegraph:
             l = mlines.Line2D([x1, x2], [y1, y2], color=era.color)
             self.ax.add_line(l)
 
-    def draw_watermark(self):
+    def __draw_watermark(self):
         """ """
         if self.show_watermark:
             self.fig.text(0.5, 0.5, self.watermark_text,
             fontsize=100, color='gray',
             ha='center', va='center', alpha=0.3, rotation = 65, transform = self.ax.transAxes)
 
-    def resolve_annotations(self, annotations, side):
+    def __resolve_annotations(self, annotations, side):
         """
 
         :param annotations: 
@@ -405,7 +582,7 @@ class Lifegraph:
         """
         for a in annotations:
             # first, get the bounds
-            self.set_annotation_metadata(a)
+            self.__set_annotation_metadata(a)
 
             # now set the intitial positions
             # we want all of the text to be on the left or right of the squares
@@ -432,38 +609,28 @@ class Lifegraph:
             final.append(unchecked)
 
         return final
-
-    def add_90(self):
-        """ """
-        ax2 = self.ax.twinx()
-        ax2.set_yticklabels([90], fontdict={'fontweight': 'bold', 'fontsize': 20})
-        ax2.yaxis.set_tick_params(width=0)
-        ax2.set_frame_on(False)
-
-    def show(self):
-        """ """
-        if not self.isDrawn:
-            self.draw()
-        self.ax.show()
-
-    def save(self, name, transparent=False):
+    
+    def __to_date_position(self, date):
+        week = int(np.floor((date - self.birthdate).days / 7)) + 1
+        x = week % self.xmax
+        y = int(np.floor(week / self.xmax))
+        year_of_life = y
+        return DatePosition(x, y, week, year_of_life, date)
+    
+    def __sanitize_hint(self, hint):
+        """ Hints should have an x value < 0 or bigger than self.xmax
         """
+        # TODO: what should this be?
+        edge = 10
+        if hint is not None:
+            if (hint.x >= self.xmax / 2 and hint.x < self.xmax) or hint.x > self.xmax + edge:
+                hint.x = self.xmax
+            if hint.x > 0 <= self.xmax / 2 or hint.x < -edge:
+                hint.x = 0
+        
+        return hint
 
-        :param name: 
-        :param transparent:  (Default value = False)
-
-        """
-        logging.info(f"Saving lifegraph with name {name}.")
-        if not self.isDrawn:
-            self.draw()
-        plt.savefig(name, transparent=transparent, bbox_inches = "tight")
-
-    def close(self):
-        """ """
-        if self.isDrawn:
-            self.ax.close()
-
-    def set_annotation_metadata(self, a):
+    def __set_annotation_metadata(self, a):
         """
 
         :param a: 
@@ -481,174 +648,4 @@ class Lifegraph:
         bbox_data_units = self.ax.transData.inverted().transform(bbox)
         a.set_metadata(Bbox(bbox_data_units))
         t.remove()
-
-    def add_life_event(self, text, date, color, hint = None, side = None):
-        """
-
-        :param text: 
-        :param date: 
-        :param color: 
-        :param hint:  (Default value = None)
-        :param side:  (Default value = None)
-
-        """
-        logging.info(f"Adding life event '{text}' with color {color}")
-        if (date < self.birthdate or date > (relativedelta(years=self.ymax) + self.birthdate)):
-            raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
-        if (hint is not None and side is not None):
-            raise ValueError(f"Hint and side are mutually exclusive arguments. Specify only one of them.")
-
-        week = int(np.floor((date - self.birthdate).days / 7)) + 1
-        x = week % self.xmax
-        y = int(np.floor(week / self.xmax))
-
-        hint = self.__sanitize_hint__(hint)
-        self.data.append(Marker(x, y, color=color))
-
-        labelx = self.xmax if (x > self.xmax / 2) else 0
-        labely = y
-
-        if hint is not None:
-            lablex = hint.x
-            labely = hint.y
-        
-        if side is not None:
-            if side == Side.LEFT:
-                labelx = 0
-            else:
-                labelx = self.xmax
-
-        a = Annotation(labelx, y, date, text=text, color=color, event_point=Point(x, y), shrink = self.annotation_marker_size / 2)
-        if (labelx > self.xmax / 2):
-            self.annotations_right.append(a)
-        else:
-            self.annotations_left.append(a)
-    
-    def add_era(self, text, start_date, end_date, color, hint = None, side = None):
-        """
-
-        :param text: 
-        :param start_date: 
-        :param end_date: 
-        :param color: 
-        :param hint:  (Default value = None)
-        :param side:  (Default value = None)
-
-        """
-        logging.info(f"Adding era '{text}' with color {color}")
-        if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
-            raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
-        if (end_date < self.birthdate or end_date > (relativedelta(years=self.ymax) + self.birthdate)):
-            raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
-        if (hint is not None and side is not None):
-            raise ValueError(f"Hint and side are mutually exclusive arguments. Specify only one of them.")
-
-        hint = self.__sanitize_hint__(hint)
-        start_position = self.__to_date_position__(start_date)
-        end_position = self.__to_date_position__(end_date)
-
-        self.eras.append(Era(text, start_position, end_position, color))
-
-        # now add an annotation for the label
-        labelx = self.xmax
-        labely = np.floor(np.average((start_position.y, end_position.y)))
-        if hint is not None:
-            labelx = hint.x
-            labely = hint.y
-
-        if side is not None:
-            if side == Side.LEFT:
-                labelx = 0
-            else:
-                labelx = self.xmax
-
-        point = Point(labelx, labely)
-        # when sorting the annotatio the date is used
-        # choose the middle date so that the annotation ends up 
-        # as close to the middle of the era as possible
-        # if no hint was provided
-        middle_date = start_date + (end_date - start_date)/2
-
-        a = Annotation(point.x, point.y, middle_date, text, color=color, event_point=point, font_size=20.0, draw_point=False, shrink=self.era_shrink)
-        if (labelx > self.xmax / 2):
-            self.annotations_right.append(a)
-        else:
-            self.annotations_left.append(a)
-    
-    def add_era_span(self, text, start_date, end_date, color = 'g', hint = None, side = None):
-        """
-
-        :param text: 
-        :param start_date: 
-        :param end_date: 
-        :param color:  (Default value = 'g')
-        :param hint:  (Default value = None)
-        :param side:  (Default value = None)
-
-        """
-        logging.info(f"Adding era span '{text}' with color {color}")
-        if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
-            raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
-        if (end_date < self.birthdate or end_date > (relativedelta(years=self.ymax) + self.birthdate)):
-            raise ValueError(f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
-        if (hint is not None and side is not None):
-            raise ValueError(f"Hint and side are mutually exclusive arguments. Specify only one of them.")
-
-        hint = self.__sanitize_hint__(hint)
-        start_position = self.__to_date_position__(start_date)
-        end_position = self.__to_date_position__(end_date)
-
-        # this will put a dumbell onto the graph spanning the era
-        self.era_spans.append(Era(text, start_position, end_position, color))
-
-        # now add an annotation for the label
-        labelx = self.xmax
-        labely = np.floor(np.average((start_position.y, end_position.y)))
-        if hint is not None:
-            labelx = hint.x
-            labely = hint.y
-        
-        if side is not None:
-            if side == Side.LEFT:
-                labelx = 0
-            else:
-                labelx = self.xmax
-
-        point = Point(labelx, labely)
-        middle_date = start_date + (end_date - start_date)/2
-
-        middle_of_line_x = np.average((start_position.x, end_position.x))
-        middle_of_line_y = np.average((start_position.y, end_position.y))
-        
-        self.annotations_right.append(Annotation(point.x, point.y, middle_date, text, 
-                            color=color, event_point=Point(middle_of_line_x, middle_of_line_y), font_size=20.0, draw_point=False))
-
-    def add_watermark(self, text):
-        """
-
-        :param text: 
-
-        """
-        self.watermark_text = text
-        self.show_watermark = True
-    
-    def __to_date_position__(self, date):
-        week = int(np.floor((date - self.birthdate).days / 7)) + 1
-        x = week % self.xmax
-        y = int(np.floor(week / self.xmax))
-        year_of_life = y
-        return DatePosition(x, y, week, year_of_life, date)
-    
-    def __sanitize_hint__(self, hint):
-        """ Hints should have an x value < 0 or bigger than self.xmax
-        """
-        # TODO: what should this be?
-        edge = 10
-        if hint is not None:
-            if (hint.x >= self.xmax / 2 and hint.x < self.xmax) or hint.x > self.xmax + edge:
-                hint.x = self.xmax
-            if hint.x > 0 <= self.xmax / 2 or hint.x < -edge:
-                hint.x = 0
-        
-        return hint
 
