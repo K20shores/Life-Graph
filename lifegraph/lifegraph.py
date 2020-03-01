@@ -90,8 +90,8 @@ class Marker(Point):
     def __init__(self, x, y, marker='s', fillstyle='none', color='black'):
         """
 
-        :param x: 
-        :param y: 
+        :param x: The x position of a marker
+        :param y: The y position of a marker
         :param marker:  (Default value = 's')
         :param fillstyle:  (Default value = 'none')
         :param color:  (Default value = 'black')
@@ -113,7 +113,6 @@ class Marker(Point):
 
 class Annotation(Point):
     """A class to hold the text of an annotation with methods to help layout the text."""
-    # the default for marker size is 10.0, which should be the default for matplotlib text objects
 
     def __init__(self, date, text, label_point, marker='s', color='black', bbox=None, event_point=None, font_size=10.0, draw_point=True, shrink=0):
         """
@@ -247,10 +246,10 @@ class Era():
     def __init__(self, text, start, end, color):
         """
 
-        :param text: 
-        :param start: 
-        :param end: 
-        :param color: 
+        :param text: The text to place on the graph
+        :param start: A datetime.date indicating the start of the era
+        :param end: A datetime.date indicating the end of the era
+        :param color: A color useable by any matplotlib object
 
         """
         self.text = text
@@ -269,7 +268,6 @@ class Era():
 
 class Papersize:
     """A class holding papersize in inches"""
-    # all sizes are in inches
     _4A0 = [66.2, 93.6]
     _2A0 = [46.8, 66.2]
     A0 = [33.1, 46.8]
@@ -368,13 +366,13 @@ class Lifegraph:
         ax2.set_frame_on(False)
 
     def add_life_event(self, text, date, color, hint=None, side=None):
-        """
+        """ Label an event in your life
 
-        :param text: param date:
-        :param color: param hint:  (Default value = None)
-        :param side: Default value = None)
-        :param date: param hint:  (Default value = None)
-        :param hint: Default value = None)
+        :param text: param date: The date that the event occurred
+        :param date: (Default value = None) When the event occurred
+        :param color: (Default value = None) A color useable by any matplotlib object
+        :param hint: Default value = None) Mutually exclusive with side. Not required. If the default placement is not desired. A Point may be provided to help the graph decide where to place the label of the event.
+        :param side: Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
 
         """
         logging.info(f"Adding life event '{text}' with color {color}")
@@ -389,27 +387,15 @@ class Lifegraph:
         x = week % self.xmax
         y = int(np.floor(week / self.xmax))
 
-        hint = self.__sanitize_hint(hint)
+        default_x = self.xmax if (x > self.xmax / 2) else 0
+        label_point = self.__get_label_point(hint, side, default_x, y)
+
         self.data.append(Marker(x, y, color=color))
-
-        labelx = self.xmax if (x > self.xmax / 2) else 0
-        labely = y
-
-        if hint is not None:
-            lablex = hint.x
-            labely = hint.y
-
-        if side is not None:
-            if side == Side.LEFT:
-                labelx = 0
-            else:
-                labelx = self.xmax
-
-        label_point = Point(labelx, labely)
 
         a = Annotation(date, text, label_point=label_point, color=color,
                        event_point=Point(x, y), shrink=self.annotation_marker_size / 2)
-        if (labelx > self.xmax / 2):
+
+        if (label_point.x > self.xmax / 2):
             self.annotations_right.append(a)
         else:
             self.annotations_left.append(a)
@@ -442,7 +428,7 @@ class Lifegraph:
         self.eras.append(Era(text, start_position, end_position, color))
 
         label_point = self.__get_label_point(
-            hint, side, start_position, end_position)
+            hint, side, self.xmax, np.average((start_position.y, end_position.y)))
         # when sorting the annotatio the date is used
         # choose the middle date so that the annotation ends up
         # as close to the middle of the era as possible
@@ -481,7 +467,7 @@ class Lifegraph:
         start_position = self.__to_date_position(start_date)
         end_position = self.__to_date_position(end_date)
         label_point = self.__get_label_point(
-            hint, side, start_position, end_position)
+            hint, side, self.xmax, np.average((start_position.y, end_position.y)))
 
         # this will put a dumbbell onto the graph spanning the era
         self.era_spans.append(Era(text, start_position, end_position, color))
@@ -744,7 +730,7 @@ class Lifegraph:
         a.set_metadata(Bbox(bbox_data_units))
         t.remove()
 
-    def __get_label_point(self, hint, side, start_position, end_position):
+    def __get_label_point(self, hint, side, default_x = 0, default_y = 0):
         """
 
         :param hint: 
@@ -754,9 +740,9 @@ class Lifegraph:
 
         """
         hint = self.__sanitize_hint(hint)
-        # now add an annotation for the label
-        labelx = self.xmax
-        labely = np.floor(np.average((start_position.y, end_position.y)))
+        labelx = default_x
+        labely = default_y
+
         if hint is not None:
             labelx = hint.x
             labely = hint.y
