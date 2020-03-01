@@ -114,31 +114,31 @@ class Marker(Point):
 class Annotation(Point):
     """A class to hold the text of an annotation with methods to help layout the text."""
 
-    def __init__(self, date, text, label_point, marker='s', color='black', bbox=None, event_point=None, font_size=10.0, draw_point=True, shrink=0):
+    def __init__(self, date, text, label_point, color='black', bbox=None, event_point=None, font_size=10.0, put_circle_around_point=True, shrink=0, marker=None):
         """
 
         :param date: 
         :param text: 
         :param label_point: 
-        :param marker:  (Default value = 's')
         :param color:  (Default value = 'black')
         :param bbox:  (Default value = None)
         :param event_point:  (Default value = None)
         :param font_size:  (Default value = 10.0)
-        :param draw_point:  (Default value = True)
+        :param put_circle_around_point:  (Default value = True)
         :param shrink:  (Default value = 0)
+        :param marker: (Default value = None) A Marker
 
         """
         super().__init__(label_point.x, label_point.y)
         self.date = date
         self.text = text
-        self.marker = marker
         self.color = color
         self.bbox = bbox
         self.event_point = event_point
         self.font_size = font_size
-        self.draw_point = draw_point
+        self.put_circle_around_point = put_circle_around_point
         self.shrink = shrink
+        self.marker = marker
 
     def set_metadata(self, bbox):
         """Set the bounding box of an annotation
@@ -265,6 +265,23 @@ class Era():
         """ """
         return f"Era '{self.text}' starting at {self.start}, ending at {self.end}"
 
+class EraSpan(Era):
+    """A class which shows a dumbbell shape on the graph defining a span of your life"""
+
+    def __init__(self, text, start, end, color, start_marker=None, end_marker=None):
+        """
+
+        :param text: The text to place on the graph
+        :param start: A datetime.date indicating the start of the era
+        :param end: A datetime.date indicating the end of the era
+        :param color: A color useable by any matplotlib object
+        :param start_marker: (Default = None) A marker for the starting point if one is wanted different than the default of the graph
+        :param end_marker: (Default = None) A marker for the ending point if one is wanted different than the default of the graph
+
+        """
+        super().__init__(text, start, end, color)
+        self.start_marker = start_marker
+        self.end_marker = end_marker
 
 class Papersize:
     """A class holding papersize in inches"""
@@ -292,7 +309,7 @@ class Papersize:
 class Lifegraph:
     """This class will represent your life as a graph of boxes"""
 
-    def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=.2, show_watermark=False):
+    def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=.5, show_watermark=False):
         """
 
         :param birthdate: 
@@ -365,14 +382,15 @@ class Lifegraph:
         ax2.yaxis.set_tick_params(width=0)
         ax2.set_frame_on(False)
 
-    def add_life_event(self, text, date, color, hint=None, side=None):
+    def add_life_event(self, text, date, color, hint=None, side=None, color_square=True):
         """ Label an event in your life
 
         :param text: param date: The date that the event occurred
         :param date: (Default value = None) When the event occurred
         :param color: (Default value = None) A color useable by any matplotlib object
-        :param hint: Default value = None) Mutually exclusive with side. Not required. If the default placement is not desired. A Point may be provided to help the graph decide where to place the label of the event.
-        :param side: Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
+        :param hint: (Default value = None) Mutually exclusive with side. Not required. If the default placement is not desired. A Point may be provided to help the graph decide where to place the label of the event.
+        :param side: (Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
+        :param color_square: (Default value = True) Colors the sqaure on the graph the same color as the text if True. The sqaure is the default color of the graph squares otherwise
 
         """
         logging.info(f"Adding life event '{text}' with color {color}")
@@ -390,25 +408,28 @@ class Lifegraph:
         default_x = self.xmax if (x > self.xmax / 2) else 0
         label_point = self.__get_label_point(hint, side, default_x, y)
 
-        self.data.append(Marker(x, y, color=color))
+        marker = None
+        if color_square:
+            marker = Marker(x, y, color=color)
 
         a = Annotation(date, text, label_point=label_point, color=color,
-                       event_point=Point(x, y), shrink=self.annotation_marker_size / 2)
+                       event_point=Point(x, y), shrink=self.annotation_marker_size / 2, marker=marker)
 
         if (label_point.x > self.xmax / 2):
             self.annotations_right.append(a)
         else:
             self.annotations_left.append(a)
 
-    def add_era(self, text, start_date, end_date, color, hint=None, side=None):
+    def add_era(self, text, start_date, end_date, color, hint=None, side=None, font_size=20):
         """
 
-        :param text: param start_date:
-        :param end_date: param color:
-        :param hint: Default value = None)
-        :param side: Default value = None)
-        :param start_date: param color:
-        :param color: 
+        :param text: The label text for the era
+        :param start_date: When the event started
+        :param end_date: When the event ended
+        :param color: A color useable by any matplotlib object
+        :param hint: (Default value = None) Mutually exclusive with side. Not required. If the default placement is not desired. A Point may be provided to help the graph decide where to place the label of the event.
+        :param side: (Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
+        :param font_size: (Default value = 20) the font size passed to matplotlib.axes.annotation
 
         """
         logging.info(f"Adding era '{text}' with color {color}")
@@ -429,28 +450,29 @@ class Lifegraph:
 
         label_point = self.__get_label_point(
             hint, side, self.xmax, np.average((start_position.y, end_position.y)))
-        # when sorting the annotatio the date is used
+        # when sorting the annotation the date is used
         # choose the middle date so that the annotation ends up
         # as close to the middle of the era as possible
         # if no hint was provided
         middle_date = start_date + (end_date - start_date)/2
 
         a = Annotation(middle_date, text, label_point=label_point, color=color,
-                       event_point=label_point, font_size=20.0, draw_point=False, shrink=self.era_shrink)
+                       event_point=label_point, font_size=font_size, put_circle_around_point=False, shrink=self.era_shrink)
         if (label_point.x > self.xmax / 2):
             self.annotations_right.append(a)
         else:
             self.annotations_left.append(a)
 
-    def add_era_span(self, text, start_date, end_date, color='g', hint=None, side=None):
+    def add_era_span(self, text, start_date, end_date, color='g', hint=None, side=None, color_start_and_end_markers=False):
         """
 
         :param text: param start_date:
-        :param end_date: param color:  (Default value = 'g')
+        :param start_date:
+        :param end_date:
+        :param color: Default value = 'g')
         :param hint: Default value = None)
         :param side: Default value = None)
-        :param start_date: param color:  (Default value = 'g')
-        :param color: Default value = 'g')
+        :param color_start_and_end_markers: (Default value = False) Colors the sqaures indicating the start and end date on the graph the same color as the text if True. The sqaures are the default color of the graph squares otherwise
 
         """
         logging.info(f"Adding era span '{text}' with color {color}")
@@ -468,18 +490,22 @@ class Lifegraph:
         end_position = self.__to_date_position(end_date)
         label_point = self.__get_label_point(
             hint, side, self.xmax, np.average((start_position.y, end_position.y)))
+        
+        start_marker = None
+        end_marker = None
+        if color_start_and_end_markers:
+            start_marker = Marker(start_position.x, start_position.y, color=color)
+            end_marker = Marker(end_position.x, end_position.y, color=color)
 
         # this will put a dumbbell onto the graph spanning the era
-        self.era_spans.append(Era(text, start_position, end_position, color))
+        self.era_spans.append(EraSpan(text, start_position, end_position, color, start_marker=start_marker, end_marker=end_marker))
 
         middle_date = start_date + (end_date - start_date)/2
 
-        middle_of_line_x = np.average((start_position.x, end_position.x))
-        middle_of_line_y = np.average((start_position.y, end_position.y))
-        event_point = Point(middle_of_line_x, middle_of_line_y)
+        event_point = Point(np.average((start_position.x, end_position.x)), np.average((start_position.y, end_position.y)))
 
         self.annotations_right.append(Annotation(middle_date, text, label_point=label_point,
-                                                 color=color, event_point=event_point, font_size=20.0, draw_point=False))
+                                                 color=color, event_point=event_point, font_size=20.0, put_circle_around_point=False))
 
     def add_watermark(self, text):
         """
@@ -517,10 +543,6 @@ class Lifegraph:
 
         self.ax.plot(xs, ys, color=self.color, marker=self.marker,
                      fillstyle=self.fillstyle, linestyle='none', mew=self.grid_mew)
-
-        for point in self.data:
-            self.ax.plot(point.x, point.y, color=point.color, marker=point.marker,
-                         fillstyle=point.fillstyle, linestyle='none', mew=self.grid_mew)
 
         self.__format_xaxis()
         self.__format_yaxis()
@@ -573,9 +595,14 @@ class Lifegraph:
             self.annotations_right, Side.RIGHT))
 
         for a in final:
-            if a.draw_point:
+            if a.put_circle_around_point:
                 self.ax.plot(a.event_point.x, a.event_point.y, marker='o', color=a.color,
                              markerfacecolor='none', ms=self.annotation_marker_size, mew=self.annotation_edge_width)
+                             
+            if a.marker is not None:
+                self.ax.plot(a.marker.x, a.marker.y, color=a.marker.color, marker=a.marker.marker,
+                         fillstyle=a.marker.fillstyle, linestyle='none', mew=self.grid_mew)
+
             self.ax.annotate(a.text, xy=(a.event_point.x, a.event_point.y), xytext=(a.x, a.y),
                              weight='bold', color=a.color, size=a.font_size, va='center_baseline',
                              arrowprops=dict(arrowstyle='-',
@@ -633,6 +660,14 @@ class Lifegraph:
 
             x2 = era.end.x + np.cos(angle2) * radius
             y2 = era.end.y + np.sin(angle2) * radius
+
+            if era.start_marker is not None:
+                self.ax.plot(era.start_marker.x, era.start_marker.y, color=era.start_marker.color, marker=era.start_marker.marker,
+                         fillstyle=era.start_marker.fillstyle, linestyle='none', mew=self.grid_mew)
+
+            if era.end_marker is not None:
+                self.ax.plot(era.end_marker.x, era.end_marker.y, color=era.end_marker.color, marker=era.end_marker.marker,
+                         fillstyle=era.end_marker.fillstyle, linestyle='none', mew=self.grid_mew)
 
             l = mlines.Line2D([x1, x2], [y1, y2], color=era.color)
             self.ax.add_line(l)
