@@ -441,7 +441,8 @@ class Lifegraph:
 
         self.eras.append(Era(text, start_position, end_position, color))
 
-        label_point = self.__get_label_point(hint, side, start_position, end_position)
+        label_point = self.__get_label_point(
+            hint, side, start_position, end_position)
         # when sorting the annotatio the date is used
         # choose the middle date so that the annotation ends up
         # as close to the middle of the era as possible
@@ -479,7 +480,8 @@ class Lifegraph:
 
         start_position = self.__to_date_position(start_date)
         end_position = self.__to_date_position(end_date)
-        label_point = self.__get_label_point(hint, side, start_position, end_position)
+        label_point = self.__get_label_point(
+            hint, side, start_position, end_position)
 
         # this will put a dumbbell onto the graph spanning the era
         self.era_spans.append(Era(text, start_position, end_position, color))
@@ -764,6 +766,5 @@ class Lifegraph:
                 labelx = 0
             else:
                 labelx = self.xmax
-        
-        return Point(labelx, labely)
 
+        return Point(labelx, labely)
