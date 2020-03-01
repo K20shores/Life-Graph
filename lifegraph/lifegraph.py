@@ -39,13 +39,21 @@ class Point:
     """A point class that holds the x and y coordinates in data units"""
 
     def __init__(self, x, y):
+        """
+
+        :param x: 
+        :param y: 
+
+        """
         self.x = x
         self.y = y
 
     def __repr__(self):
+        """ """
         return f"({self.x}, {self.y})"
 
     def __str__(self):
+        """ """
         return f"({self.x}, {self.y})"
 
 
@@ -53,15 +61,26 @@ class DatePosition(Point):
     """A class to hold the week, year of life, and date assocaited with a Point"""
 
     def __init__(self, x, y, week, year_of_life, date):
+        """
+
+        :param x: 
+        :param y: 
+        :param week: 
+        :param year_of_life: 
+        :param date: 
+
+        """
         super().__init__(x, y)
         self.week = week
         self.year_of_life = year_of_life
         self.date = date
 
     def __repr__(self):
+        """ """
         return f"DatePosition: year({self.year_of_life}), week({self.week}), date({self.date}) at point {super().__repr__()}"
 
     def __str__(self):
+        """ """
         return f"DatePosition: year({self.year_of_life}), week({self.week}), date({self.date}) at point {super().__repr__()}"
 
 
@@ -69,15 +88,26 @@ class Marker(Point):
     """A class to indicate how and where to draw a marker"""
 
     def __init__(self, x, y, marker='s', fillstyle='none', color='black'):
+        """
+
+        :param x: 
+        :param y: 
+        :param marker:  (Default value = 's')
+        :param fillstyle:  (Default value = 'none')
+        :param color:  (Default value = 'black')
+
+        """
         super().__init__(x, y)
         self.marker = marker
         self.fillstyle = fillstyle
         self.color = color
 
     def __repr__(self):
+        """ """
         return f"Marker at {super().__repr__()}"
 
     def __str__(self):
+        """ """
         return f"Marker at {super().__repr__()}"
 
 
@@ -86,6 +116,20 @@ class Annotation(Point):
     # the default for marker size is 10.0, which should be the default for matplotlib text objects
 
     def __init__(self, date, text, label_point, marker='s', color='black', bbox=None, event_point=None, font_size=10.0, draw_point=True, shrink=0):
+        """
+
+        :param date: 
+        :param text: 
+        :param label_point: 
+        :param marker:  (Default value = 's')
+        :param color:  (Default value = 'black')
+        :param bbox:  (Default value = None)
+        :param event_point:  (Default value = None)
+        :param font_size:  (Default value = 10.0)
+        :param draw_point:  (Default value = True)
+        :param shrink:  (Default value = 0)
+
+        """
         super().__init__(label_point.x, label_point.y)
         self.date = date
         self.text = text
@@ -189,9 +233,11 @@ class Annotation(Point):
         self.bbox.y1 += correction[1]
 
     def __repr__(self):
+        """ """
         return f"Annotation '{self.text}' at {super().__repr__()}"
 
     def __str__(self):
+        """ """
         return f"Annotation '{self.text}' at {super().__repr__()}"
 
 
@@ -199,15 +245,25 @@ class Era():
     """A class which shows a highlighted area on the graph to indicate a span of time"""
 
     def __init__(self, text, start, end, color):
+        """
+
+        :param text: 
+        :param start: 
+        :param end: 
+        :param color: 
+
+        """
         self.text = text
         self.start = start
         self.end = end
         self.color = color
 
     def __repr__(self):
+        """ """
         return f"Era '{self.text}' starting at {self.start}, ending at {self.end}"
 
     def __str__(self):
+        """ """
         return f"Era '{self.text}' starting at {self.start}, ending at {self.end}"
 
 
@@ -239,6 +295,15 @@ class Lifegraph:
     """This class will represent your life as a graph of boxes"""
 
     def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=.2, show_watermark=False):
+        """
+
+        :param birthdate: 
+        :param size:  (Default value = Papersize.A3)
+        :param dpi:  (Default value = 300)
+        :param label_space_epsilon:  (Default value = .2)
+        :param show_watermark:  (Default value = False)
+
+        """
         logging.info(f"Initializing lifegraph")
         if birthdate is None or not isinstance(birthdate, datetime.date):
             raise ValueError("birthdate must be a valid datetime.date object")
@@ -308,8 +373,8 @@ class Lifegraph:
         :param text: param date:
         :param color: param hint:  (Default value = None)
         :param side: Default value = None)
-        :param date: 
-        :param hint:  (Default value = None)
+        :param date: param hint:  (Default value = None)
+        :param hint: Default value = None)
 
         """
         logging.info(f"Adding life event '{text}' with color {color}")
@@ -356,7 +421,7 @@ class Lifegraph:
         :param end_date: param color:
         :param hint: Default value = None)
         :param side: Default value = None)
-        :param start_date: 
+        :param start_date: param color:
         :param color: 
 
         """
@@ -397,8 +462,8 @@ class Lifegraph:
         :param end_date: param color:  (Default value = 'g')
         :param hint: Default value = None)
         :param side: Default value = None)
-        :param start_date: 
-        :param color:  (Default value = 'g')
+        :param start_date: param color:  (Default value = 'g')
+        :param color: Default value = 'g')
 
         """
         logging.info(f"Adding era span '{text}' with color {color}")
@@ -449,7 +514,7 @@ class Lifegraph:
         """
 
         :param name: param transparent:  (Default value = False)
-        :param transparent:  (Default value = False)
+        :param transparent: Default value = False)
 
         """
         logging.info(f"Saving lifegraph with name {name}.")
@@ -594,7 +659,7 @@ class Lifegraph:
     def __resolve_annotations(self, annotations, side):
         """
 
-        :param annotations: 
+        :param annotations: param side:
         :param side: 
 
         """
@@ -630,6 +695,11 @@ class Lifegraph:
         return final
 
     def __to_date_position(self, date):
+        """
+
+        :param date: 
+
+        """
         week = int(np.floor((date - self.birthdate).days / 7)) + 1
         x = week % self.xmax
         y = int(np.floor(week / self.xmax))
@@ -637,7 +707,10 @@ class Lifegraph:
         return DatePosition(x, y, week, year_of_life, date)
 
     def __sanitize_hint(self, hint):
-        """ Hints should have an x value < 0 or bigger than self.xmax
+        """Hints should have an x value < 0 or bigger than self.xmax
+
+        :param hint: 
+
         """
         # TODO: what should this be?
         edge = 10
@@ -670,6 +743,14 @@ class Lifegraph:
         t.remove()
 
     def __get_label_point(self, hint, side, start_position, end_position):
+        """
+
+        :param hint: 
+        :param side: 
+        :param start_position: 
+        :param end_position: 
+
+        """
         hint = self.__sanitize_hint(hint)
         # now add an annotation for the label
         labelx = self.xmax
