@@ -140,7 +140,7 @@ class Annotation(Point):
         self.shrink = shrink
         self.marker = marker
 
-    def set_metadata(self, bbox):
+    def set_bbox(self, bbox):
         """Set the bounding box of an annotation
 
         :param bbox: a matplotlib.transforms.Bbox instance
@@ -342,8 +342,6 @@ class Lifegraph:
         self.xlims = [self.xmin, self.xmax]
         self.ylims = [self.ymin, self.ymax]
 
-        self.data = []
-
         # drawing controls
         self.inner_padx = -4
         self.inner_pady = -4
@@ -362,15 +360,12 @@ class Lifegraph:
 
         self.fontsize = 25
 
-        self.era_offset = .5
-        self.era_linewidth = 10.0
         self.era_alpha = 0.2
         self.era_shrink = 10
 
         self.label_space_epsilon = label_space_epsilon
 
-        self.annotations_left = []
-        self.annotations_right = []
+        self.annotations = []
         self.eras = []
         self.era_spans = []
 
@@ -397,9 +392,6 @@ class Lifegraph:
         if (date < self.birthdate or date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
-        if (hint is not None and side is not None):
-            raise ValueError(
-                f"Hint and side are mutually exclusive arguments. Specify only one of them.")
 
         week = int(np.floor((date - self.birthdate).days / 7)) + 1
         x = week % self.xmax
@@ -414,11 +406,8 @@ class Lifegraph:
 
         a = Annotation(date, text, label_point=label_point, color=color,
                        event_point=Point(x, y), shrink=self.annotation_marker_size / 2, marker=marker)
+        self.annotations.append(a)
 
-        if (label_point.x > self.xmax / 2):
-            self.annotations_right.append(a)
-        else:
-            self.annotations_left.append(a)
 
     def add_era(self, text, start_date, end_date, color, hint=None, side=None, font_size=20):
         """
@@ -439,9 +428,6 @@ class Lifegraph:
         if (end_date < self.birthdate or end_date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
-        if (hint is not None and side is not None):
-            raise ValueError(
-                f"Hint and side are mutually exclusive arguments. Specify only one of them.")
 
         start_position = self.__to_date_position(start_date)
         end_position = self.__to_date_position(end_date)
@@ -458,10 +444,7 @@ class Lifegraph:
 
         a = Annotation(middle_date, text, label_point=label_point, color=color,
                        event_point=label_point, font_size=font_size, put_circle_around_point=False, shrink=self.era_shrink)
-        if (label_point.x > self.xmax / 2):
-            self.annotations_right.append(a)
-        else:
-            self.annotations_left.append(a)
+        self.annotations.append(a)
 
     def add_era_span(self, text, start_date, end_date, color='g', hint=None, side=None, color_start_and_end_markers=False):
         """
@@ -482,9 +465,6 @@ class Lifegraph:
         if (end_date < self.birthdate or end_date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
-        if (hint is not None and side is not None):
-            raise ValueError(
-                f"Hint and side are mutually exclusive arguments. Specify only one of them.")
 
         start_position = self.__to_date_position(start_date)
         end_position = self.__to_date_position(end_date)
@@ -504,7 +484,7 @@ class Lifegraph:
 
         event_point = Point(np.average((start_position.x, end_position.x)), np.average((start_position.y, end_position.y)))
 
-        self.annotations_right.append(Annotation(middle_date, text, label_point=label_point,
+        self.annotations.append(Annotation(middle_date, text, label_point=label_point,
                                                  color=color, event_point=event_point, font_size=20.0, put_circle_around_point=False))
 
     def add_watermark(self, text):
@@ -544,8 +524,8 @@ class Lifegraph:
         self.ax.plot(xs, ys, color=self.color, marker=self.marker,
                      fillstyle=self.fillstyle, linestyle='none', mew=self.grid_mew)
 
-        self.__format_xaxis()
-        self.__format_yaxis()
+        self.__draw_xaxis()
+        self.__draw_yaxis()
 
         self.__draw_annotations()
         self.__draw_eras()
@@ -557,7 +537,7 @@ class Lifegraph:
 
         self.ax.set_aspect('equal', adjustable='box')
 
-    def __format_xaxis(self):
+    def __draw_xaxis(self):
         """ """
         self.ax.set_xlim(self.xlims)
         # put x ticks on top
@@ -573,7 +553,7 @@ class Lifegraph:
         self.ax.xaxis.set_tick_params(
             width=0, direction='out', pad=self.inner_padx)
 
-    def __format_yaxis(self):
+    def __draw_yaxis(self):
         """ """
         self.ax.set_ylim(self.ylims)
         # set y ticks
@@ -588,11 +568,7 @@ class Lifegraph:
 
     def __draw_annotations(self):
         """ """
-        final = []
-        final.extend(self.__resolve_annotations(
-            self.annotations_left, Side.LEFT))
-        final.extend(self.__resolve_annotations(
-            self.annotations_right, Side.RIGHT))
+        final = self.__resolve_annotation_conflicts(self.annotations)
 
         for a in final:
             if a.put_circle_around_point:
@@ -679,28 +655,35 @@ class Lifegraph:
                           fontsize=100, color='gray',
                           ha='center', va='center', alpha=0.3, rotation=65, transform=self.ax.transAxes)
 
-    def __resolve_annotations(self, annotations, side):
-        """
+    def __resolve_annotation_conflicts(self, annotations):
+        """Put annotation text labels on the graph while avoiding conflicts.
+
+        This method decides the final (x, y) coordinates for the graph such that
+        no two text label bounding boxes overlap. This happens by placing the labels
+        from the top of the graph to the bottom. If any label were to overlap with
+        another, it is moved down graph by the amount that it overlaps plus a buffer
+        amount of space. The annotations are also sorted by their event date, so
+        that labels pointing to the same line will avoid having their arcs overlap
+        each other.
 
         :param annotations: param side:
-        :param side: 
 
         """
         for a in annotations:
             # first, get the bounds
-            self.__set_annotation_metadata(a)
+            self.__set_annotation_bbox(a)
 
             # now set the intitial positions
             # we want all of the text to be on the left or right of the squares
             width = a.bbox.width
-            x = 0
-            if side == side.LEFT:
-                x = self.xmin - self.left_annotation_offset - width
-            else:
-                x = self.xmax + self.right_annotation_offset
-            a.x = x
-            a.bbox.x0 = x
-            a.bbox.x1 = x + width
+            # to preserve hint values, only set the x value if it is inside the graph
+            # or if it is not at least as far as the offset
+            if ((a.x >= self.xmax / 2) and (a.x < self.xmax)) or (a.x >= self.xmax and a.x < self.xmax + self.right_annotation_offset):
+                a.x = self.xmax + self.right_annotation_offset
+            elif ((a.x >= 0) and (a.x < self.xmax / 2)) or (a.x <= self.xmin and a.x > self.xmin - self.left_annotation_offset):
+                a.x = self.xmin - self.left_annotation_offset - width
+            a.bbox.x0 = a.x
+            a.bbox.x1 = a.x + width
 
         annotations.sort(key=lambda a: a.date)
         final = []
@@ -740,12 +723,12 @@ class Lifegraph:
         if hint is not None:
             if (hint.x >= self.xmax / 2 and hint.x < self.xmax) or hint.x > self.xmax + edge:
                 hint.x = self.xmax
-            if hint.x > 0 <= self.xmax / 2 or hint.x < -edge:
+            if (hint.x > 0 and hint.x < self.xmax / 2) or hint.x < -edge:
                 hint.x = 0
 
         return hint
 
-    def __set_annotation_metadata(self, a):
+    def __set_annotation_bbox(self, a):
         """
 
         :param a: 
@@ -762,7 +745,7 @@ class Lifegraph:
         bbox = t.get_window_extent(renderer=self.renderer)
         # now convert it to data units
         bbox_data_units = self.ax.transData.inverted().transform(bbox)
-        a.set_metadata(Bbox(bbox_data_units))
+        a.set_bbox(Bbox(bbox_data_units))
         t.remove()
 
     def __get_label_point(self, hint, side, default_x = 0, default_y = 0):
@@ -774,6 +757,9 @@ class Lifegraph:
         :param end_position: 
 
         """
+        if (hint is not None and side is not None):
+            raise ValueError(
+                f"Hint and side are mutually exclusive arguments. Specify only one of them.")
         hint = self.__sanitize_hint(hint)
         labelx = default_x
         labely = default_y
