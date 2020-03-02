@@ -265,6 +265,7 @@ class Era():
         """ """
         return f"Era '{self.text}' starting at {self.start}, ending at {self.end}"
 
+
 class EraSpan(Era):
     """A class which shows a dumbbell shape on the graph defining a span of your life"""
 
@@ -282,6 +283,7 @@ class EraSpan(Era):
         super().__init__(text, start, end, color)
         self.start_marker = start_marker
         self.end_marker = end_marker
+
 
 class Papersize:
     """A class holding papersize in inches"""
@@ -408,7 +410,6 @@ class Lifegraph:
                        event_point=Point(x, y), shrink=self.annotation_marker_size / 2, marker=marker)
         self.annotations.append(a)
 
-
     def add_era(self, text, start_date, end_date, color, hint=None, side=None, font_size=20):
         """
 
@@ -470,22 +471,25 @@ class Lifegraph:
         end_position = self.__to_date_position(end_date)
         label_point = self.__get_label_point(
             hint, side, self.xmax, np.average((start_position.y, end_position.y)))
-        
+
         start_marker = None
         end_marker = None
         if color_start_and_end_markers:
-            start_marker = Marker(start_position.x, start_position.y, color=color)
+            start_marker = Marker(
+                start_position.x, start_position.y, color=color)
             end_marker = Marker(end_position.x, end_position.y, color=color)
 
         # this will put a dumbbell onto the graph spanning the era
-        self.era_spans.append(EraSpan(text, start_position, end_position, color, start_marker=start_marker, end_marker=end_marker))
+        self.era_spans.append(EraSpan(text, start_position, end_position,
+                                      color, start_marker=start_marker, end_marker=end_marker))
 
         middle_date = start_date + (end_date - start_date)/2
 
-        event_point = Point(np.average((start_position.x, end_position.x)), np.average((start_position.y, end_position.y)))
+        event_point = Point(np.average((start_position.x, end_position.x)), np.average(
+            (start_position.y, end_position.y)))
 
         self.annotations.append(Annotation(middle_date, text, label_point=label_point,
-                                                 color=color, event_point=event_point, font_size=20.0, put_circle_around_point=False))
+                                           color=color, event_point=event_point, font_size=20.0, put_circle_around_point=False))
 
     def add_watermark(self, text):
         """
@@ -574,10 +578,10 @@ class Lifegraph:
             if a.put_circle_around_point:
                 self.ax.plot(a.event_point.x, a.event_point.y, marker='o', color=a.color,
                              markerfacecolor='none', ms=self.annotation_marker_size, mew=self.annotation_edge_width)
-                             
+
             if a.marker is not None:
                 self.ax.plot(a.marker.x, a.marker.y, color=a.marker.color, marker=a.marker.marker,
-                         fillstyle=a.marker.fillstyle, linestyle='none', mew=self.grid_mew)
+                             fillstyle=a.marker.fillstyle, linestyle='none', mew=self.grid_mew)
 
             self.ax.annotate(a.text, xy=(a.event_point.x, a.event_point.y), xytext=(a.x, a.y),
                              weight='bold', color=a.color, size=a.font_size, va='center_baseline',
@@ -639,11 +643,11 @@ class Lifegraph:
 
             if era.start_marker is not None:
                 self.ax.plot(era.start_marker.x, era.start_marker.y, color=era.start_marker.color, marker=era.start_marker.marker,
-                         fillstyle=era.start_marker.fillstyle, linestyle='none', mew=self.grid_mew)
+                             fillstyle=era.start_marker.fillstyle, linestyle='none', mew=self.grid_mew)
 
             if era.end_marker is not None:
                 self.ax.plot(era.end_marker.x, era.end_marker.y, color=era.end_marker.color, marker=era.end_marker.marker,
-                         fillstyle=era.end_marker.fillstyle, linestyle='none', mew=self.grid_mew)
+                             fillstyle=era.end_marker.fillstyle, linestyle='none', mew=self.grid_mew)
 
             l = mlines.Line2D([x1, x2], [y1, y2], color=era.color)
             self.ax.add_line(l)
@@ -748,7 +752,7 @@ class Lifegraph:
         a.set_bbox(Bbox(bbox_data_units))
         t.remove()
 
-    def __get_label_point(self, hint, side, default_x = 0, default_y = 0):
+    def __get_label_point(self, hint, side, default_x=0, default_y=0):
         """
 
         :param hint: 
