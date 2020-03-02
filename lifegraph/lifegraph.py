@@ -311,7 +311,7 @@ class Papersize:
 class Lifegraph:
     """This class will represent your life as a graph of boxes"""
 
-    def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=.5, show_watermark=False):
+    def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=.5, show_watermark=False, max_age=90):
         """
 
         :param birthdate: 
@@ -339,10 +339,22 @@ class Lifegraph:
         self.xmin = -.5
         self.xmax = 52
         self.ymin = -.5
-        self.ymax = 90
+        self.ymax = max_age
 
         self.xlims = [self.xmin, self.xmax]
         self.ylims = [self.ymin, self.ymax]
+
+        self.fontsize = 25
+
+        self.xaxis_label = r'Week of the Year $\longrightarrow$'
+        self.xaxis_color = 'b'
+        self.xaxis_position = (0.35, 1.02)
+        self.xaxis_fontsize = self.fontsize
+
+        self.yaxis_label = r'$\longleftarrow$ Age'
+        self.yaxis_color = 'b'
+        self.yaxis_position = (-0.02, 0.90)
+        self.yaxis_fontsize = self.fontsize
 
         # drawing controls
         self.inner_padx = -4
@@ -360,8 +372,6 @@ class Lifegraph:
         self.show_watermark = show_watermark
         self.watermark_text = ''
 
-        self.fontsize = 25
-
         self.era_alpha = 0.2
         self.era_shrink = 10
 
@@ -371,7 +381,41 @@ class Lifegraph:
         self.eras = []
         self.era_spans = []
 
-    def add_90(self):
+    def format_x_axis(self, text=None, positionx=None, positiony=None, color=None, fontsize=None):
+        if text is not None:
+            self.xaxis_label = text
+
+        x,y = self.xaxis_position
+        if positionx is not None:
+            x = positionx
+        if positiony is not None:
+            y = positiony
+        self.xaxis_position = (x, y)
+
+        if color is not None:
+            self.xaxis_color = color
+
+        if fontsize is not None:
+            self.xaxis_fontsize = fontsize
+
+    def format_y_axis(self, text=None, positionx=None, positiony=None, color=None, fontsize=None):
+        if text is not None:
+            self.yaxis_label = text
+
+        x,y = self.yaxis_position
+        if positionx is not None:
+            x = positionx
+        if positiony is not None:
+            y = positiony
+        self.yaxis_position = (x, y)
+
+        if color is not None:
+            self.yaxis_color = color
+
+        if fontsize is not None:
+            self.yaxis_fontsize = fontsize
+
+    def show_max_age_label(self):
         """Places the text '90' on the bottom right of the plot"""
         ax2 = self.ax.twinx()
         ax2.set_yticklabels(
@@ -550,10 +594,10 @@ class Lifegraph:
         self.ax.xaxis.tick_top()
         self.ax.set_xticks(xticks)
         self.ax.set_xticklabels(xticks[:-1])
-        self.ax.set_xlabel(r'Week of the Year $\longrightarrow$',
-                           color='blue', fontsize=self.fontsize)
+        self.ax.set_xlabel(self.xaxis_label,
+                           color=self.xaxis_color, fontsize=self.xaxis_fontsize)
         self.ax.xaxis.set_label_position('top')
-        self.ax.xaxis.set_label_coords(0.35, 1.02)
+        self.ax.xaxis.set_label_coords(*self.xaxis_position)
         self.ax.xaxis.set_tick_params(
             width=0, direction='out', pad=self.inner_padx)
 
@@ -563,9 +607,9 @@ class Lifegraph:
         # set y ticks
         yticks = [*range(0, self.ymax, 5)]
         self.ax.set_yticks(yticks)
-        self.ax.set_ylabel(r'$\longleftarrow$ Age',
-                           color='blue', fontsize=self.fontsize)
-        self.ax.yaxis.set_label_coords(-0.02, 0.90)
+        self.ax.set_ylabel(self.yaxis_label,
+                           color=self.yaxis_color, fontsize=self.yaxis_fontsize)
+        self.ax.yaxis.set_label_coords(*self.yaxis_position)
         self.ax.yaxis.set_tick_params(
             width=0, direction='in', pad=self.inner_pady)
         self.ax.invert_yaxis()
