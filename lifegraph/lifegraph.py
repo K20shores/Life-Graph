@@ -311,7 +311,7 @@ class Papersize:
 class Lifegraph:
     """This class will represent your life as a graph of boxes"""
 
-    def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=.5, show_watermark=False, max_age=90):
+    def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=.5, max_age=90):
         """
 
         :param birthdate: 
@@ -346,6 +346,9 @@ class Lifegraph:
 
         self.fontsize = 25
 
+        self.title = None
+        self.title_fontsize = self.fontsize
+
         self.xaxis_label = r'Week of the Year $\longrightarrow$'
         self.xaxis_color = 'b'
         self.xaxis_position = (0.35, 1.02)
@@ -369,8 +372,7 @@ class Lifegraph:
         self.annotation_marker_size = 12
         self.annotation_edge_width = 1.5
 
-        self.show_watermark = show_watermark
-        self.watermark_text = ''
+        self.watermark_text = None
 
         self.era_alpha = 0.2
         self.era_shrink = 10
@@ -417,11 +419,9 @@ class Lifegraph:
 
     def show_max_age_label(self):
         """Places the text '90' on the bottom right of the plot"""
-        ax2 = self.ax.twinx()
-        ax2.set_yticklabels(
-            [90], fontdict={'fontweight': 'bold', 'fontsize': 20})
-        ax2.yaxis.set_tick_params(width=0)
-        ax2.set_frame_on(False)
+        self.ax.text(self.xmax+3, self.ymax, str(self.ymax),
+                        fontsize=self.fontsize, color='black',
+                        ha='center', va='bottom', transform=self.ax.transData)
 
     def add_life_event(self, text, date, color, hint=None, side=None, color_square=True):
         """ Label an event in your life
@@ -542,7 +542,11 @@ class Lifegraph:
 
         """
         self.watermark_text = text
-        self.show_watermark = True
+    
+    def add_title(self, text, fontsize=None):
+        self.title = text
+        if fontsize is not None:
+            self.title_fontsize = fontsize
 
     def show(self):
         """ """
@@ -579,11 +583,12 @@ class Lifegraph:
         self.__draw_eras()
         self.__draw_era_spans()
         self.__draw_watermark()
+        self.__draw_title()
 
         # hide the horizontal and vertical lines
         self.ax.set_frame_on(False)
 
-        self.ax.set_aspect('equal', adjustable='box')
+        self.ax.set_aspect('equal', adjustable='box', share=True)
 
     def __draw_xaxis(self):
         """ """
@@ -698,10 +703,14 @@ class Lifegraph:
 
     def __draw_watermark(self):
         """ """
-        if self.show_watermark:
+        if self.watermark_text is not None:
             self.fig.text(0.5, 0.5, self.watermark_text,
                           fontsize=100, color='gray',
                           ha='center', va='center', alpha=0.3, rotation=65, transform=self.ax.transAxes)
+    
+    def __draw_title(self):
+        if self.title is not None:
+            self.fig.suptitle(self.title, fontsize=self.title_fontsize)
 
     def __resolve_annotation_conflicts(self, annotations):
         """Put annotation text labels on the graph while avoiding conflicts.
