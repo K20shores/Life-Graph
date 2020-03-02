@@ -351,12 +351,12 @@ class Lifegraph:
 
         self.xaxis_label = r'Week of the Year $\longrightarrow$'
         self.xaxis_color = 'b'
-        self.xaxis_position = (0.35, 1.02)
+        self.xaxis_position = (0.20, 1.02)
         self.xaxis_fontsize = self.fontsize
 
         self.yaxis_label = r'$\longleftarrow$ Age'
         self.yaxis_color = 'b'
-        self.yaxis_position = (-0.02, 0.90)
+        self.yaxis_position = (-0.02, 0.95)
         self.yaxis_fontsize = self.fontsize
 
         # drawing controls
@@ -480,7 +480,7 @@ class Lifegraph:
         self.eras.append(Era(text, start_position, end_position, color))
 
         label_point = self.__get_label_point(
-            hint, side, self.xmax, np.average((start_position.y, end_position.y)))
+            hint, side, self.xmax, np.average((start_position.y, end_position.y)), is_Era=True)
         # when sorting the annotation the date is used
         # choose the middle date so that the annotation ends up
         # as close to the middle of the era as possible
@@ -805,7 +805,7 @@ class Lifegraph:
         a.set_bbox(Bbox(bbox_data_units))
         t.remove()
 
-    def __get_label_point(self, hint, side, default_x=0, default_y=0):
+    def __get_label_point(self, hint, side, default_x=0, default_y=0, is_Era=False):
         """
 
         :param hint: 
@@ -827,7 +827,7 @@ class Lifegraph:
 
         if side is not None:
             if side == Side.LEFT:
-                labelx = 0
+                labelx = 0 if is_Era == False else 1
             else:
                 labelx = self.xmax
 
