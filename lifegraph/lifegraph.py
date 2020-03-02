@@ -387,7 +387,7 @@ class Lifegraph:
         if text is not None:
             self.xaxis_label = text
 
-        x,y = self.xaxis_position
+        x, y = self.xaxis_position
         if positionx is not None:
             x = positionx
         if positiony is not None:
@@ -404,7 +404,7 @@ class Lifegraph:
         if text is not None:
             self.yaxis_label = text
 
-        x,y = self.yaxis_position
+        x, y = self.yaxis_position
         if positionx is not None:
             x = positionx
         if positiony is not None:
@@ -418,10 +418,10 @@ class Lifegraph:
             self.yaxis_fontsize = fontsize
 
     def show_max_age_label(self):
-        """Places the text '90' on the bottom right of the plot"""
+        """Places the max age on the bottom right of the plot"""
         self.ax.text(self.xmax+3, self.ymax, str(self.ymax),
-                        fontsize=self.fontsize, color='black',
-                        ha='center', va='bottom', transform=self.ax.transData)
+                     fontsize=self.fontsize, color='black',
+                     ha='center', va='bottom', transform=self.ax.transData)
 
     def add_life_event(self, text, date, color, hint=None, side=None, color_square=True):
         """ Label an event in your life
@@ -542,7 +542,7 @@ class Lifegraph:
 
         """
         self.watermark_text = text
-    
+
     def add_title(self, text, fontsize=None):
         self.title = text
         if fontsize is not None:
@@ -707,7 +707,7 @@ class Lifegraph:
             self.fig.text(0.5, 0.5, self.watermark_text,
                           fontsize=100, color='gray',
                           ha='center', va='center', alpha=0.3, rotation=65, transform=self.ax.transAxes)
-    
+
     def __draw_title(self):
         if self.title is not None:
             self.fig.suptitle(self.title, fontsize=self.title_fontsize)
