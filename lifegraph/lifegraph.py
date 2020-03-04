@@ -631,7 +631,7 @@ class Lifegraph:
                              fillstyle=a.marker.fillstyle, linestyle='none', mew=self.grid_mew)
 
             self.ax.annotate(a.text, xy=(a.event_point.x, a.event_point.y), xytext=(a.x, a.y),
-                             weight='bold', color=a.color, size=a.font_size, va='center_baseline',
+                             weight='bold', color=a.color, size=a.font_size, va='center',
                              arrowprops=dict(arrowstyle='-',
                                              connectionstyle="arc3",
                                              color=a.color,
