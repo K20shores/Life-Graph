@@ -114,7 +114,7 @@ class Marker(Point):
 class Annotation(Point):
     """A class to hold the text of an annotation with methods to help layout the text."""
 
-    def __init__(self, date, text, label_point, color='black', bbox=None, event_point=None, font_size=10.0, put_circle_around_point=True, shrink=0, marker=None):
+    def __init__(self, date, text, label_point, color='black', bbox=None, event_point=None, font_size=10.0, put_circle_around_point=True, shrink=0, marker=None, relpos=(.5, .5)):
         """
 
         :param date: 
@@ -139,6 +139,7 @@ class Annotation(Point):
         self.put_circle_around_point = put_circle_around_point
         self.shrink = shrink
         self.marker = marker
+        self.relpos = relpos
 
     def set_bbox(self, bbox):
         """Set the bounding box of an annotation
@@ -147,6 +148,9 @@ class Annotation(Point):
 
         """
         self.bbox = bbox
+    
+    def set_relpos(self, relpos):
+        self.relpos = relpos
 
     def overlaps(self, that):
         """Check that the two Bboxes don't overlap
@@ -631,7 +635,8 @@ class Lifegraph:
                              arrowprops=dict(arrowstyle='-',
                                              connectionstyle="arc3",
                                              color=a.color,
-                                             shrinkB=a.shrink))
+                                             shrinkB=a.shrink,
+                                             relpos=a.relpos)) #search for 'relpos' on https://matplotlib.org/tutorials/text/annotations.html
 
     def __draw_eras(self):
         """ """
@@ -720,6 +725,10 @@ class Lifegraph:
         :param annotations: param side:
 
         """
+        # set the bounding box and initial positions of the annotations
+        # the x-value is only corrected if it is inside the graph or too close to the graph
+        left = []
+        right = []
         for a in annotations:
             # first, get the bounds
             self.__set_annotation_bbox(a)
@@ -735,19 +744,30 @@ class Lifegraph:
                 a.x = self.xmin - self.left_annotation_offset - width
             a.bbox.x0 = a.x
             a.bbox.x1 = a.x + width
+            if (a.x >= self.xmax / 2):
+                a.set_relpos((0, 0.5))
+                right.append(a)
+            if (a.x < self.xmax / 2):
+                a.set_relpos((1, 0.5))
+                left.append(a)
 
-        annotations.sort(key=lambda a: a.date)
+        left.sort(key=lambda a: a.date)
+        right.sort(key=lambda a: (a.event_point.y, -a.event_point.x))
+
         final = []
-        for unchecked in annotations:
-            for checked in final:
-                if unchecked.overlaps(checked):
-                    correction = unchecked.xy_overlapping_width_height(
-                        checked, self.label_space_epsilon)
-                    unchecked.update_Y_with_correction(correction)
-                if unchecked.is_within_epsilon_of(checked, self.label_space_epsilon):
-                    correction = [0, self.label_space_epsilon]
-                    unchecked.update_Y_with_correction(correction)
-            final.append(unchecked)
+        for lst in [left, right]:
+            _f = []
+            for unchecked in lst:
+                for checked in _f:
+                    if unchecked.overlaps(checked):
+                        correction = unchecked.xy_overlapping_width_height(
+                            checked, self.label_space_epsilon)
+                        unchecked.update_Y_with_correction(correction)
+                    if unchecked.is_within_epsilon_of(checked, self.label_space_epsilon):
+                        correction = [0, self.label_space_epsilon]
+                        unchecked.update_Y_with_correction(correction)
+                _f.append(unchecked)
+            final.extend(_f)
 
         return final
 
