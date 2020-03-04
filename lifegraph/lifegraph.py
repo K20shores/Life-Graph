@@ -161,22 +161,18 @@ class Annotation(Point):
         if (not isinstance(that, Annotation)):
             raise ValueError("Argument for intersects should be an annotation")
 
-        if (self.bbox.x0 >= that.bbox.x1 or that.bbox.x0 >= self.bbox.x1):
+        if (self.bbox.xmin >= that.bbox.xmax or that.bbox.xmin >= self.bbox.xmax):
             return False
 
         # the coordinates are inverted, so y0 is larger than y1
-        if (self.bbox.y0 <= that.bbox.y1 or that.bbox.y0 <= self.bbox.y1):
+        if (self.bbox.ymin >= that.bbox.ymax or that.bbox.ymin >= self.bbox.ymax):
             return False
 
         return True
 
-    def is_within_epsilong_of(self, that, epsilon):
-        """Check that the two Bboxes don't overlap
+    def is_within_epsilon_of(self, that, epsilon):
+        """Check that the two are not at least as close as some epsilon
         
-        They don't overlap if
-            1) one rectangle's left side is strictly to the right other's right side
-            2) one rectangle's top side is stricly bellow the other's bottom side
-
         :param that: An Annotation
         :param epsilon: A real number to define the tolerance for how close the label text can be
 
@@ -184,11 +180,10 @@ class Annotation(Point):
         if (not isinstance(that, Annotation)):
             raise ValueError("Argument for intersects should be an annotation")
 
-        if (self.bbox.x0 + epsilon >= that.bbox.x1 or that.bbox.x0 + epsilon >= self.bbox.x1):
+        if (self.bbox.xmin - epsilon > that.bbox.xmax or that.bbox.xmin - epsilon > self.bbox.xmax):
             return False
 
-        # the coordinates are inverted, so y0 is larger than y1
-        if (self.bbox.y0 + epsilon <= that.bbox.y1 or that.bbox.y0 + epsilon <= self.bbox.y1):
+        if (self.bbox.ymin - epsilon > that.bbox.ymax or that.bbox.ymin - epsilon > self.bbox.ymax):
             return False
 
         return True
@@ -204,12 +199,12 @@ class Annotation(Point):
             raise ValueError("Argument for intersects should be an annotation")
 
         # find the width and height of the overlapping rectangle
-        width = min(self.bbox.x1, that.bbox.x1) - \
-            max(self.bbox.x0, that.bbox.x0)
-        # the coordinates are inverted, so y0 is larger than y1
-        height = min(self.bbox.y0, that.bbox.y0) - \
-            max(self.bbox.y1, that.bbox.y1)
-        return (width + epsilon, height + epsilon)
+        width = min(self.bbox.xmax, that.bbox.xmax) - \
+            max(self.bbox.xmin, that.bbox.xmin)
+        height = min(self.bbox.ymax, that.bbox.ymax) - \
+            max(self.bbox.ymin, that.bbox.ymin)
+
+        return (width, height)
 
     def update_X_with_correction(self, correction):
         """Move the label text in the x direction according to the value in correction
@@ -311,7 +306,7 @@ class Papersize:
 class Lifegraph:
     """This class will represent your life as a graph of boxes"""
 
-    def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=.5, max_age=90):
+    def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=0.2, max_age=90):
         """
 
         :param birthdate: 
@@ -443,7 +438,7 @@ class Lifegraph:
         x = week % self.xmax
         y = int(np.floor(week / self.xmax))
 
-        default_x = self.xmax if (x > self.xmax / 2) else 0
+        default_x = self.xmax if (x >= self.xmax / 2) else 0
         label_point = self.__get_label_point(hint, side, default_x, y)
 
         marker = None
@@ -454,14 +449,13 @@ class Lifegraph:
                        event_point=Point(x, y), shrink=self.annotation_marker_size / 2, marker=marker)
         self.annotations.append(a)
 
-    def add_era(self, text, start_date, end_date, color, hint=None, side=None, font_size=20):
+    def add_era(self, text, start_date, end_date, color, side=None, font_size=20):
         """
 
         :param text: The label text for the era
         :param start_date: When the event started
         :param end_date: When the event ended
         :param color: A color useable by any matplotlib object
-        :param hint: (Default value = None) Mutually exclusive with side. Not required. If the default placement is not desired. A Point may be provided to help the graph decide where to place the label of the event.
         :param side: (Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
         :param font_size: (Default value = 20) the font size passed to matplotlib.axes.annotation
 
@@ -480,7 +474,7 @@ class Lifegraph:
         self.eras.append(Era(text, start_position, end_position, color))
 
         label_point = self.__get_label_point(
-            hint, side, self.xmax, np.average((start_position.y, end_position.y)), is_Era=True)
+            hint=None, side=side, default_x=self.xmax, default_y=np.average((start_position.y, end_position.y)), is_Era=True)
         # when sorting the annotation the date is used
         # choose the middle date so that the annotation ends up
         # as close to the middle of the era as possible
@@ -750,7 +744,7 @@ class Lifegraph:
                     correction = unchecked.xy_overlapping_width_height(
                         checked, self.label_space_epsilon)
                     unchecked.update_Y_with_correction(correction)
-                if unchecked.is_within_epsilong_of(checked, self.label_space_epsilon):
+                if unchecked.is_within_epsilon_of(checked, self.label_space_epsilon):
                     correction = [0, self.label_space_epsilon]
                     unchecked.update_Y_with_correction(correction)
             final.append(unchecked)
@@ -805,7 +799,7 @@ class Lifegraph:
         a.set_bbox(Bbox(bbox_data_units))
         t.remove()
 
-    def __get_label_point(self, hint, side, default_x=0, default_y=0, is_Era=False):
+    def __get_label_point(self, hint=None, side=None, default_x=0, default_y=0, is_Era=False):
         """
 
         :param hint: 
