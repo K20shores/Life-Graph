@@ -442,19 +442,17 @@ class Lifegraph:
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
 
-        week = int(np.floor((date - self.birthdate).days / 7)) + 1
-        x = week % self.xmax
-        y = int(np.floor(week / self.xmax))
+        position = self.__to_date_position(date)
 
-        default_x = self.xmax if (x >= self.xmax / 2) else 0
-        label_point = self.__get_label_point(hint, side, default_x, y)
+        default_x = self.xmax if (position.x >= self.xmax / 2) else 0
+        label_point = self.__get_label_point(hint, side, default_x, position.y)
 
         marker = None
         if color_square:
-            marker = Marker(x, y, color=color)
+            marker = Marker(position.x, position.y, color=color)
 
         a = Annotation(date, text, label_point=label_point, color=color,
-                       event_point=Point(x, y), shrink=self.annotation_marker_size / 2, marker=marker)
+                       event_point=Point(position.x, position.y), shrink=self.annotation_marker_size / 2, marker=marker)
         self.annotations.append(a)
 
     def add_era(self, text, start_date, end_date, color, side=None, font_size=20, alpha=0.3):
@@ -800,7 +798,7 @@ class Lifegraph:
 
         """
         week = int(np.floor((date - self.birthdate).days / 7)) + 1
-        x = week % self.xmax
+        x = week % self.xmax + 1
         y = int(np.floor(week / self.xmax))
         year_of_life = y
         return DatePosition(x, y, week, year_of_life, date)
