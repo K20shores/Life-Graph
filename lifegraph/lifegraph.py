@@ -753,18 +753,25 @@ class Lifegraph:
             width = a.bbox.width
             # to preserve hint values, only set the x value if it is inside the graph
             # or if it is not at least as far as the offset
-            if ((a.x >= self.xmax / 2) and (a.x < self.xmax)) or (a.x >= self.xmax and a.x < self.xmax + self.right_annotation_offset):
-                a.x = self.xmax + self.right_annotation_offset
-            elif ((a.x >= 0) and (a.x < self.xmax / 2)) or (a.x <= self.xmin and a.x > self.xmin - self.left_annotation_offset):
-                a.x = self.xmin - self.left_annotation_offset - width
-            a.bbox.x0 = a.x
-            a.bbox.x1 = a.x + width
-            if (a.x >= self.xmax / 2):
-                a.set_relpos((0, 0.5))
+            if a.y >= 0 and a.y <= self.ymax:
+                if ((a.x >= self.xmax / 2) and (a.x < self.xmax)) or (a.x >= self.xmax and a.x < self.xmax + self.right_annotation_offset):
+                    a.x = self.xmax + self.right_annotation_offset
+                elif ((a.x >= 0) and (a.x < self.xmax / 2)) or (a.x <= self.xmin and a.x > self.xmin - self.left_annotation_offset):
+                    a.x = self.xmin - self.left_annotation_offset - width
+                a.bbox.x0 = a.x
+                a.bbox.x1 = a.x + width
+                if (a.x >= self.xmax / 2):
+                    a.set_relpos((0, 0.5))
+                    right.append(a)
+                if (a.x < self.xmax / 2):
+                    a.set_relpos((1, 0.5))
+                    left.append(a)
+            elif a.y < 0:
+                a.set_relpos((0.5, 0))
                 right.append(a)
-            if (a.x < self.xmax / 2):
-                a.set_relpos((1, 0.5))
-                left.append(a)
+            elif a.y > self.ymax:
+                a.set_relpos((0.5, 1))
+                right.append(a)
 
         left.sort(key=lambda a: a.date)
         right.sort(key=lambda a: (a.event_point.y, -a.event_point.x))
@@ -805,12 +812,15 @@ class Lifegraph:
 
         """
         # TODO: what should this be?
-        edge = 10
         if hint is not None:
-            if (hint.x >= self.xmax / 2 and hint.x < self.xmax) or hint.x > self.xmax + edge:
-                hint.x = self.xmax
-            if (hint.x > 0 and hint.x < self.xmax / 2) or hint.x < -edge:
-                hint.x = 0
+            edge = 10
+            if not isinstance(hint, Point):
+                hint = Point(hint[0], hint[1])
+            if hint.y >= 0 and hint.y <= self.ymax:
+                if (hint.x >= self.xmax / 2 and hint.x < self.xmax) or hint.x > self.xmax + edge:
+                    hint.x = self.xmax
+                if (hint.x > 0 and hint.x < self.xmax / 2) or hint.x < -edge:
+                    hint.x = 0
 
         return hint
 
