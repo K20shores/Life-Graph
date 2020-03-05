@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.lines as mlines
+import matplotlib.image as mpimg
 import numpy as np
 import datetime
 import random
@@ -242,7 +243,7 @@ class Annotation(Point):
 class Era():
     """A class which shows a highlighted area on the graph to indicate a span of time"""
 
-    def __init__(self, text, start, end, color):
+    def __init__(self, text, start, end, color, alpha=1):
         """
 
         :param text: The text to place on the graph
@@ -255,6 +256,7 @@ class Era():
         self.start = start
         self.end = end
         self.color = color
+        self.alpha = alpha
 
     def __repr__(self):
         """ """
@@ -348,6 +350,9 @@ class Lifegraph:
         self.title = None
         self.title_fontsize = self.fontsize
 
+        self.image_name = None
+        self.image_alpha = 1
+
         self.xaxis_label = r'Week of the Year $\longrightarrow$'
         self.xaxis_color = 'b'
         self.xaxis_position = (0.20, 1.02)
@@ -373,7 +378,6 @@ class Lifegraph:
 
         self.watermark_text = None
 
-        self.era_alpha = 0.2
         self.era_shrink = 10
 
         self.label_space_epsilon = label_space_epsilon
@@ -453,7 +457,7 @@ class Lifegraph:
                        event_point=Point(x, y), shrink=self.annotation_marker_size / 2, marker=marker)
         self.annotations.append(a)
 
-    def add_era(self, text, start_date, end_date, color, side=None, font_size=20):
+    def add_era(self, text, start_date, end_date, color, side=None, font_size=20, alpha=0.3):
         """
 
         :param text: The label text for the era
@@ -475,7 +479,7 @@ class Lifegraph:
         start_position = self.__to_date_position(start_date)
         end_position = self.__to_date_position(end_date)
 
-        self.eras.append(Era(text, start_position, end_position, color))
+        self.eras.append(Era(text, start_position, end_position, color, alpha=alpha))
 
         label_point = self.__get_label_point(
             hint=None, side=side, default_x=self.xmax, default_y=np.average((start_position.y, end_position.y)), is_Era=True)
@@ -546,6 +550,10 @@ class Lifegraph:
         if fontsize is not None:
             self.title_fontsize = fontsize
 
+    def add_image(self, image_name, alpha=1):
+        self.image_name = image_name
+        self.image_alpha = alpha
+
     def show(self):
         """ """
         self.ax.show()
@@ -582,6 +590,7 @@ class Lifegraph:
         self.__draw_era_spans()
         self.__draw_watermark()
         self.__draw_title()
+        self.__draw_image()
 
         # hide the horizontal and vertical lines
         self.ax.set_frame_on(False)
@@ -648,15 +657,15 @@ class Lifegraph:
                     axesUnits = self.ax.transLimits.transform(
                         (era.start.x-.5, era.start.y))
                     self.ax.axhspan(y-.5, y+.5, facecolor=era.color,
-                                    alpha=self.era_alpha, xmin=axesUnits[0], xmax=xmax)
+                                    alpha=era.alpha, xmin=axesUnits[0], xmax=xmax)
                 elif y == era.end.y:
                     axesUnits = self.ax.transLimits.transform(
                         (era.end.x+.5, era.end.y))
                     self.ax.axhspan(y-.5, y+.5, facecolor=era.color,
-                                    alpha=self.era_alpha, xmin=xmin, xmax=axesUnits[0])
+                                    alpha=era.alpha, xmin=xmin, xmax=axesUnits[0])
                 else:
                     self.ax.axhspan(y-.5, y+.5, facecolor=era.color,
-                                    alpha=self.era_alpha, xmin=xmin, xmax=xmax)
+                                    alpha=era.alpha, xmin=xmin, xmax=xmax)
 
     def __draw_era_spans(self):
         """ """
@@ -710,6 +719,12 @@ class Lifegraph:
     def __draw_title(self):
         if self.title is not None:
             self.fig.suptitle(self.title, fontsize=self.title_fontsize)
+
+    def __draw_image(self):
+        if self.image_name is not None:
+            img = mpimg.imread(self.image_name)
+            extent = (0.5, self.xmax+0.5, -0.5, self.ymax-0.5)
+            self.ax.imshow(img, extent=extent, origin='lower', alpha=self.image_alpha)
 
     def __resolve_annotation_conflicts(self, annotations):
         """Put annotation text labels on the graph while avoiding conflicts.
