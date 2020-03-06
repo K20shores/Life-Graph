@@ -1,7 +1,10 @@
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from lifegraph.lifegraph import Lifegraph, Papersize, random_color, Point, Side
 from datetime import date, datetime
 
 def main():
+    print (os.getcwd())
     birthday = date(1990, 11, 1)
     g = Lifegraph(birthday, dpi=300, size=Papersize.A2, max_age=90, label_space_epsilon=1)
 
@@ -20,10 +23,10 @@ def main():
 
     g.add_title("Our Life, Together")
 
-    g.add_image("marriage-2260602_1920.jpg", alpha=0.3)
+    g.add_image("examples/marriage-2260602_1920.jpg", alpha=0.3)
 
     g.show_max_age_label()
 
-    g.save("lifegraph.png")
+    g.save("examples/lifegraph.png")
 
 main()
