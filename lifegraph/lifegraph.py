@@ -41,12 +41,6 @@ class Point:
     """A point class that holds the x and y coordinates in data units"""
 
     def __init__(self, x, y):
-        """
-
-        :param x: 
-        :param y: 
-
-        """
         self.x = x
         self.y = y
 
@@ -64,11 +58,6 @@ class DatePosition(Point):
 
     def __init__(self, x, y, date):
         """
-
-        :param x: 
-        :param y: 
-        :param date: 
-
         """
         super().__init__(x, y)
         self.date = date
@@ -90,9 +79,9 @@ class Marker(Point):
 
         :param x: The x position of a marker
         :param y: The y position of a marker
-        :param marker:  (Default value = 's')
-        :param fillstyle:  (Default value = 'none')
-        :param color:  (Default value = 'black')
+        :param marker: Default value = 's')
+        :param fillstyle: Default value = 'none')
+        :param color: Default value = 'black')
 
         """
         super().__init__(x, y)
@@ -115,16 +104,15 @@ class Annotation(Point):
     def __init__(self, date, text, label_point, color='black', bbox=None, event_point=None, font_size=10.0, put_circle_around_point=True, shrink=0, marker=None, relpos=(.5, .5)):
         """
 
-        :param date: 
-        :param text: 
-        :param label_point: 
+        :param label_point: param color:  (Default value = 'black')
+        :param bbox: Default value = None)
+        :param event_point: Default value = None)
+        :param font_size: Default value = 10.0)
+        :param put_circle_around_point: Default value = True)
+        :param shrink: Default value = 0)
+        :param marker: Default value = None) A Marker
         :param color:  (Default value = 'black')
-        :param bbox:  (Default value = None)
-        :param event_point:  (Default value = None)
-        :param font_size:  (Default value = 10.0)
-        :param put_circle_around_point:  (Default value = True)
-        :param shrink:  (Default value = 0)
-        :param marker: (Default value = None) A Marker
+        :param relpos:  (Default value = (.5, .5)
 
         """
         super().__init__(label_point.x, label_point.y)
@@ -148,6 +136,11 @@ class Annotation(Point):
         self.bbox = bbox
     
     def set_relpos(self, relpos):
+        """
+
+        :param relpos: 
+
+        """
         self.relpos = relpos
 
     def overlaps(self, that):
@@ -174,7 +167,7 @@ class Annotation(Point):
 
     def is_within_epsilon_of(self, that, epsilon):
         """Check that the two are not at least as close as some epsilon
-        
+
         :param that: An Annotation
         :param epsilon: A real number to define the tolerance for how close the label text can be
 
@@ -247,6 +240,7 @@ class Era():
         :param start: A datetime.date indicating the start of the era
         :param end: A datetime.date indicating the end of the era
         :param color: A color useable by any matplotlib object
+        :param alpha:  (Default value = 1)
 
         """
         self.text = text
@@ -274,8 +268,8 @@ class EraSpan(Era):
         :param start: A datetime.date indicating the start of the era
         :param end: A datetime.date indicating the end of the era
         :param color: A color useable by any matplotlib object
-        :param start_marker: (Default = None) A marker for the starting point if one is wanted different than the default of the graph
-        :param end_marker: (Default = None) A marker for the ending point if one is wanted different than the default of the graph
+        :param start_marker: Default = None) A marker for the starting point if one is wanted different than the default of the graph
+        :param end_marker: Default = None) A marker for the ending point if one is wanted different than the default of the graph
 
         """
         super().__init__(text, start, end, color)
@@ -312,11 +306,12 @@ class Lifegraph:
     def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=0.2, max_age=90):
         """
 
-        :param birthdate: 
+        :param birthdate: param size:  (Default value = Papersize.A3)
+        :param dpi: Default value = 300)
+        :param label_space_epsilon: Default value = .2)
+        :param show_watermark: Default value = False)
         :param size:  (Default value = Papersize.A3)
-        :param dpi:  (Default value = 300)
-        :param label_space_epsilon:  (Default value = .2)
-        :param show_watermark:  (Default value = False)
+        :param max_age:  (Default value = 90)
 
         """
         logging.info(f"Initializing lifegraph")
@@ -384,6 +379,15 @@ class Lifegraph:
         self.era_spans = []
 
     def format_x_axis(self, text=None, positionx=None, positiony=None, color=None, fontsize=None):
+        """
+
+        :param text:  (Default value = None)
+        :param positionx:  (Default value = None)
+        :param positiony:  (Default value = None)
+        :param color:  (Default value = None)
+        :param fontsize:  (Default value = None)
+
+        """
         if text is not None:
             self.xaxis_label = text
 
@@ -401,6 +405,15 @@ class Lifegraph:
             self.xaxis_fontsize = fontsize
 
     def format_y_axis(self, text=None, positionx=None, positiony=None, color=None, fontsize=None):
+        """
+
+        :param text:  (Default value = None)
+        :param positionx:  (Default value = None)
+        :param positiony:  (Default value = None)
+        :param color:  (Default value = None)
+        :param fontsize:  (Default value = None)
+
+        """
         if text is not None:
             self.yaxis_label = text
 
@@ -424,14 +437,14 @@ class Lifegraph:
                      ha='center', va='bottom', transform=self.ax.transData)
 
     def add_life_event(self, text, date, color=None, hint=None, side=None, color_square=True):
-        """ Label an event in your life
+        """Label an event in your life
 
-        :param text: param date: The date that the event occurred
-        :param date: (Default value = None) When the event occurred
-        :param color: (Default value = None) A color useable by any matplotlib object
-        :param hint: (Default value = None) Mutually exclusive with side. Not required. If the default placement is not desired. A Point may be provided to help the graph decide where to place the label of the event.
-        :param side: (Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
-        :param color_square: (Default value = True) Colors the sqaure on the graph the same color as the text if True. The sqaure is the default color of the graph squares otherwise
+        :param text: The text the should appear for the life event
+        :param date: Default value = None) When the event occurred
+        :param color: Default value = None) A color useable by any matplotlib object
+        :param hint: Default value = None) Mutually exclusive with side. Not required. If the default placement is not desired. A Point may be provided to help the graph decide where to place the label of the event.
+        :param side: Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
+        :param color_square: Default value = True) Colors the sqaure on the graph the same color as the text if True. The sqaure is the default color of the graph squares otherwise
 
         """
         logging.info(f"Adding life event '{text}' with color {color}")
@@ -462,8 +475,9 @@ class Lifegraph:
         :param start_date: When the event started
         :param end_date: When the event ended
         :param color: A color useable by any matplotlib object
-        :param side: (Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
-        :param font_size: (Default value = 20) the font size passed to matplotlib.axes.annotation
+        :param side: Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
+        :param font_size: Default value = 20) the font size passed to matplotlib.axes.annotation
+        :param alpha:  (Default value = 0.3)
 
         """
         logging.info(f"Adding era '{text}' with color {color}")
@@ -495,12 +509,12 @@ class Lifegraph:
         """
 
         :param text: param start_date:
-        :param start_date:
-        :param end_date:
+        :param start_date: param end_date:
         :param color: Default value = 'g')
         :param hint: Default value = None)
         :param side: Default value = None)
-        :param color_start_and_end_markers: (Default value = False) Colors the sqaures indicating the start and end date on the graph the same color as the text if True. The sqaures are the default color of the graph squares otherwise
+        :param color_start_and_end_markers: Default value = False) Colors the sqaures indicating the start and end date on the graph the same color as the text if True. The sqaures are the default color of the graph squares otherwise
+        :param end_date: 
 
         """
         logging.info(f"Adding era span '{text}' with color {color}")
@@ -544,11 +558,23 @@ class Lifegraph:
         self.watermark_text = text
 
     def add_title(self, text, fontsize=None):
+        """
+
+        :param text: 
+        :param fontsize:  (Default value = None)
+
+        """
         self.title = text
         if fontsize is not None:
             self.title_fontsize = fontsize
 
     def add_image(self, image_name, alpha=1):
+        """
+
+        :param image_name: 
+        :param alpha:  (Default value = 1)
+
+        """
         self.image_name = image_name
         self.image_alpha = alpha
 
@@ -563,7 +589,7 @@ class Lifegraph:
     def save(self, name, transparent=False):
         """
 
-        :param name: param transparent:  (Default value = False)
+        :param name: The name and location the file should be saved at
         :param transparent: Default value = False)
 
         """
@@ -715,10 +741,12 @@ class Lifegraph:
                           ha='center', va='center', alpha=0.3, rotation=65, transform=self.ax.transAxes)
 
     def __draw_title(self):
+        """ """
         if self.title is not None:
             self.fig.suptitle(self.title, fontsize=self.title_fontsize)
 
     def __draw_image(self):
+        """ """
         if self.image_name is not None:
             img = mpimg.imread(self.image_name)
             extent = (0.5, self.xmax+0.5, -0.5, self.ymax-0.5)
@@ -726,7 +754,7 @@ class Lifegraph:
 
     def __resolve_annotation_conflicts(self, annotations):
         """Put annotation text labels on the graph while avoiding conflicts.
-
+        
         This method decides the final (x, y) coordinates for the graph such that
         no two text label bounding boxes overlap. This happens by placing the labels
         from the top of the graph to the bottom. If any label were to overlap with
@@ -817,10 +845,20 @@ class Lifegraph:
         return DatePosition(x, year, date)
     
     def __leap_years_before(self, date):
+        """
+
+        :param date: 
+
+        """
         year = date.year
         return year // 4 - year // 100 + year // 400
     
     def __is_leap_year(self, date):
+        """
+
+        :param date: 
+
+        """
         # https://docs.microsoft.com/en-us/office/troubleshoot/excel/determine-a-leap-year
         if date.year % 4 == 0:
             if date.year % 100 == 0:
@@ -872,10 +910,11 @@ class Lifegraph:
     def __get_label_point(self, hint=None, side=None, default_x=0, default_y=0, is_Era=False):
         """
 
-        :param hint: 
-        :param side: 
-        :param start_position: 
-        :param end_position: 
+        :param hint: (Default value = None)
+        :param side:  (Default value = None)
+        :param default_x:  (Default value = 0)
+        :param default_y:  (Default value = 0)
+        :param is_Era:  (Default value = False)
 
         """
         if (hint is not None and side is not None):
