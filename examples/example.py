@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from lifegraph.lifegraph import Lifegraph, Papersize, random_color, Point, Side
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 def main():
     print (os.getcwd())
@@ -11,7 +11,7 @@ def main():
     g.add_life_event('Married', date(2010, 2, 14), '#DC143C')
     g.add_life_event('Five Years Together', date(2015, 2, 14), '#DC143C')
 
-    #g.add_watermark("Kyle Shores")
+    # g.add_watermark("A Person")
 
     g.add_era("Elementary School", date(1996, 8, 24), date(2002, 6, 5), 'r')
     g.add_era("Intermediate School", date(2002, 8, 24), date(2003, 6, 5), '#00838f')

@@ -10,6 +10,7 @@ import logging
 from matplotlib.transforms import Bbox
 from matplotlib import colors as mcolors
 from datetime import date
+from dateutil import rrule
 from dateutil.relativedelta import relativedelta
 from enum import Enum
 
@@ -61,28 +62,24 @@ class Point:
 class DatePosition(Point):
     """A class to hold the week, year of life, and date assocaited with a Point"""
 
-    def __init__(self, x, y, week, year_of_life, date):
+    def __init__(self, x, y, date):
         """
 
         :param x: 
         :param y: 
-        :param week: 
-        :param year_of_life: 
         :param date: 
 
         """
         super().__init__(x, y)
-        self.week = week
-        self.year_of_life = year_of_life
         self.date = date
 
     def __repr__(self):
         """ """
-        return f"DatePosition: year({self.year_of_life}), week({self.week}), date({self.date}) at point {super().__repr__()}"
+        return f"DatePosition: year({self.y}), week({self.x}), date({self.date}) at point {super().__repr__()}"
 
     def __str__(self):
         """ """
-        return f"DatePosition: year({self.year_of_life}), week({self.week}), date({self.date}) at point {super().__repr__()}"
+        return f"DatePosition: year({self.y}), week({self.x}), date({self.date}) at point {super().__repr__()}"
 
 
 class Marker(Point):
@@ -426,7 +423,7 @@ class Lifegraph:
                      fontsize=self.fontsize, color='black',
                      ha='center', va='bottom', transform=self.ax.transData)
 
-    def add_life_event(self, text, date, color, hint=None, side=None, color_square=True):
+    def add_life_event(self, text, date, color=None, hint=None, side=None, color_square=True):
         """ Label an event in your life
 
         :param text: param date: The date that the event occurred
@@ -443,6 +440,9 @@ class Lifegraph:
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
 
         position = self.__to_date_position(date)
+
+        if color is None:
+            color = random_color()
 
         default_x = self.xmax if (position.x >= self.xmax / 2) else 0
         label_point = self.__get_label_point(hint, side, default_x, position.y)
@@ -771,7 +771,11 @@ class Lifegraph:
                 a.set_relpos((0.5, 1))
                 right.append(a)
 
-        left.sort(key=lambda a: a.date)
+        # for the left, we want to prioritze labels
+        # with lower x values to minimize the crossover of annotation lines
+        # for the right, we want to prioritize labels that are closer
+        # to the right side of the graph to minimuze the crossover of annotation lines 
+        left.sort(key=lambda a: (a.event_point.y, a.event_point.x))
         right.sort(key=lambda a: (a.event_point.y, -a.event_point.x))
 
         final = []
@@ -797,11 +801,34 @@ class Lifegraph:
         :param date: 
 
         """
-        week = int(np.floor((date - self.birthdate).days / 7)) + 1
+        delta = date - self.birthdate
+
+        year = delta.days // 365
+        # Assume the start of the year for each year of your life is your birthdate
+        # something that happens within on or up to (not including) 7 days after the start
+        # of the year happens in the first week of your life that year
+        # Using this logic, your birthday will always happen on week 1 of each year
+        start_of_year = self.birthdate + relativedelta(years=year)
+        diff = date - start_of_year
+        week = diff.days // 7
+
         x = week % self.xmax + 1
-        y = int(np.floor(week / self.xmax))
-        year_of_life = y
-        return DatePosition(x, y, week, year_of_life, date)
+
+        return DatePosition(x, year, date)
+    
+    def __leap_years_before(self, date):
+        year = date.year
+        return year // 4 - year // 100 + year // 400
+    
+    def __is_leap_year(self, date):
+        # https://docs.microsoft.com/en-us/office/troubleshoot/excel/determine-a-leap-year
+        if date.year % 4 == 0:
+            if date.year % 100 == 0:
+                if date.year % 400 == 0:
+                    return True
+            else:
+                return False
+        return False
 
     def __sanitize_hint(self, hint):
         """Hints should have an x value < 0 or bigger than self.xmax
