@@ -41,15 +41,21 @@ class Point:
     """A point class that holds the x and y coordinates in data units"""
 
     def __init__(self, x, y):
+        """ Initialize the Point class
+
+        :param x: The x coordinate
+        :param y: The y coordinate
+
+        """
         self.x = x
         self.y = y
 
     def __repr__(self):
-        """ """
+        """Print a description of the Point class"""
         return f"({self.x}, {self.y})"
 
     def __str__(self):
-        """ """
+        """Print a description of the Point class"""
         return f"({self.x}, {self.y})"
 
 
@@ -57,17 +63,22 @@ class DatePosition(Point):
     """A class to hold the week, year of life, and date assocaited with a Point"""
 
     def __init__(self, x, y, date):
-        """
+        """Initialize the DatePosition class. The base class is a Point
+
+        :param x: x coordinate passsed to Point class
+        :param y: y coordinate passsed to Point class
+        :param date: The date associated with the position
+
         """
         super().__init__(x, y)
         self.date = date
 
     def __repr__(self):
-        """ """
+        """Print a description of the DatePosition class"""
         return f"DatePosition: year({self.y}), week({self.x}), date({self.date}) at point {super().__repr__()}"
 
     def __str__(self):
-        """ """
+        """Print a description of the DatePosition class"""
         return f"DatePosition: year({self.y}), week({self.x}), date({self.date}) at point {super().__repr__()}"
 
 
@@ -75,13 +86,13 @@ class Marker(Point):
     """A class to indicate how and where to draw a marker"""
 
     def __init__(self, x, y, marker='s', fillstyle='none', color='black'):
-        """
+        """A class to configure the marker on the graph. The base is a Point class
 
         :param x: The x position of a marker
         :param y: The y position of a marker
-        :param marker: Default value = 's')
-        :param fillstyle: Default value = 'none')
-        :param color: Default value = 'black')
+        :param marker: (Default value = 's') A matplotlib marker
+        :param fillstyle: (Default value = 'none') A matplotlib fillstyle
+        :param color: (Default value = 'black') A matplotlib color
 
         """
         super().__init__(x, y)
@@ -90,11 +101,11 @@ class Marker(Point):
         self.color = color
 
     def __repr__(self):
-        """ """
+        """Print a description of the Marker class"""
         return f"Marker at {super().__repr__()}"
 
     def __str__(self):
-        """ """
+        """Print a description of the Marker class"""
         return f"Marker at {super().__repr__()}"
 
 
@@ -102,17 +113,19 @@ class Annotation(Point):
     """A class to hold the text of an annotation with methods to help layout the text."""
 
     def __init__(self, date, text, label_point, color='black', bbox=None, event_point=None, font_size=10.0, put_circle_around_point=True, shrink=0, marker=None, relpos=(.5, .5)):
-        """
+        """Initialize the Annotation class. THe base is a Point class.
 
-        :param label_point: param color:  (Default value = 'black')
-        :param bbox: Default value = None)
-        :param event_point: Default value = None)
-        :param font_size: Default value = 10.0)
-        :param put_circle_around_point: Default value = True)
-        :param shrink: Default value = 0)
-        :param marker: Default value = None) A Marker
-        :param color:  (Default value = 'black')
-        :param relpos:  (Default value = (.5, .5)
+        :param date: When the event occurred
+        :param text: The label text of the annotation
+        :param label_point: The location of the label text
+        :param color: (Default value = 'black') A matplotlib color
+        :param bbox: (Default value = None) The bounding box of the point
+        :param event_point: (Default value = None) Where on the graph the event is located
+        :param font_size: (Default value = 10.0) A font size
+        :param put_circle_around_point: (Default value = True) Should the event point be circled on the graph
+        :param shrink: (Default value = 0) How much from the event point should the arrow stop
+        :param marker: (Default value = None) A Marker class
+        :param relpos: (Default value = (.5, .5)) The position that the annotation arrow innitates from on the label, see https://matplotlib.org/tutorials/text/annotations.html
 
         """
         super().__init__(label_point.x, label_point.y)
@@ -134,11 +147,13 @@ class Annotation(Point):
 
         """
         self.bbox = bbox
-    
-    def set_relpos(self, relpos):
-        """
 
-        :param relpos: 
+    def set_relpos(self, relpos):
+        """Set the relative position that the arrow should draw from
+
+        see https://matplotlib.org/tutorials/text/annotations.html
+
+        :param relpos: a tuple whose values range from [0, 1]
 
         """
         self.relpos = relpos
@@ -222,11 +237,11 @@ class Annotation(Point):
         self.bbox.y1 += correction[1]
 
     def __repr__(self):
-        """ """
+        """Print a description of the Annotation class"""
         return f"Annotation '{self.text}' at {super().__repr__()}"
 
     def __str__(self):
-        """ """
+        """Print a description of the Annotation class"""
         return f"Annotation '{self.text}' at {super().__repr__()}"
 
 
@@ -234,13 +249,13 @@ class Era():
     """A class which shows a highlighted area on the graph to indicate a span of time"""
 
     def __init__(self, text, start, end, color, alpha=1):
-        """
+        """Initialize the Era class
 
         :param text: The text to place on the graph
         :param start: A datetime.date indicating the start of the era
         :param end: A datetime.date indicating the end of the era
         :param color: A color useable by any matplotlib object
-        :param alpha:  (Default value = 1)
+        :param alpha: (Default value = 1)
 
         """
         self.text = text
@@ -250,11 +265,11 @@ class Era():
         self.alpha = alpha
 
     def __repr__(self):
-        """ """
+        """Print a description of the Era class"""
         return f"Era '{self.text}' starting at {self.start}, ending at {self.end}"
 
     def __str__(self):
-        """ """
+        """Print a description of the Era class"""
         return f"Era '{self.text}' starting at {self.start}, ending at {self.end}"
 
 
@@ -262,14 +277,14 @@ class EraSpan(Era):
     """A class which shows a dumbbell shape on the graph defining a span of your life"""
 
     def __init__(self, text, start, end, color, start_marker=None, end_marker=None):
-        """
+        """Initalize the Era span class. The base is an Era.
 
         :param text: The text to place on the graph
         :param start: A datetime.date indicating the start of the era
         :param end: A datetime.date indicating the end of the era
         :param color: A color useable by any matplotlib object
-        :param start_marker: Default = None) A marker for the starting point if one is wanted different than the default of the graph
-        :param end_marker: Default = None) A marker for the ending point if one is wanted different than the default of the graph
+        :param start_marker: (Default = None) A marker for the starting point if one is wanted different than the default of the graph
+        :param end_marker: (Default = None) A marker for the ending point if one is wanted different than the default of the graph
 
         """
         super().__init__(text, start, end, color)
@@ -304,14 +319,13 @@ class Lifegraph:
     """This class will represent your life as a graph of boxes"""
 
     def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=0.2, max_age=90):
-        """
+        """Initalize the life graph
 
-        :param birthdate: param size:  (Default value = Papersize.A3)
-        :param dpi: Default value = 300)
-        :param label_space_epsilon: Default value = .2)
-        :param show_watermark: Default value = False)
-        :param size:  (Default value = Papersize.A3)
-        :param max_age:  (Default value = 90)
+        :param birthdate: The date to start the graph from
+        :param size:  (Default value = Papersize.A3) A papersize in inches
+        :param dpi: (Default value = 300) Dots per inch
+        :param label_space_epsilon: (Default value = .2) The minimum amount of space allowed between annotation text objects
+        :param max_age: (Default value = 90) The ending age of the graph
 
         """
         logging.info(f"Initializing lifegraph")
@@ -379,13 +393,13 @@ class Lifegraph:
         self.era_spans = []
 
     def format_x_axis(self, text=None, positionx=None, positiony=None, color=None, fontsize=None):
-        """
+        """Format the x axis. This method is required.
 
-        :param text:  (Default value = None)
-        :param positionx:  (Default value = None)
-        :param positiony:  (Default value = None)
-        :param color:  (Default value = None)
-        :param fontsize:  (Default value = None)
+        :param text: (Default value = None), If present, changes the text of the x-axis
+        :param positionx: (Default value = None) If present, changes the location of the x postion of the x-axis (in axes coordaintes)
+        :param positiony: (Default value = None) If present, changes the location of the y postion of the x-axis (in axes coordaintes)
+        :param color: (Default value = None) A matplotlib color
+        :param fontsize: (Default value = None) A matplotlib fontsize
 
         """
         if text is not None:
@@ -405,13 +419,13 @@ class Lifegraph:
             self.xaxis_fontsize = fontsize
 
     def format_y_axis(self, text=None, positionx=None, positiony=None, color=None, fontsize=None):
-        """
+        """Format the y axis. This method is required.
 
-        :param text:  (Default value = None)
-        :param positionx:  (Default value = None)
-        :param positiony:  (Default value = None)
-        :param color:  (Default value = None)
-        :param fontsize:  (Default value = None)
+        :param text: (Default value = None), If present, changes the text of the y-axis
+        :param positionx: (Default value = None) If present, changes the location of the x postion of the y-axis (in axes coordaintes)
+        :param positiony: (Default value = None) If present, changes the location of the y postion of the y-axis (in axes coordaintes)
+        :param color: (Default value = None) A matplotlib color
+        :param fontsize: (Default value = None) A matplotlib fontsize
 
         """
         if text is not None:
@@ -469,15 +483,15 @@ class Lifegraph:
         self.annotations.append(a)
 
     def add_era(self, text, start_date, end_date, color, side=None, font_size=20, alpha=0.3):
-        """
+        """Color in a section of your life
 
         :param text: The label text for the era
         :param start_date: When the event started
         :param end_date: When the event ended
         :param color: A color useable by any matplotlib object
-        :param side: Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
-        :param font_size: Default value = 20) the font size passed to matplotlib.axes.annotation
-        :param alpha:  (Default value = 0.3)
+        :param side: (Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
+        :param font_size: (Default value = 20) the font size passed to matplotlib.axes.annotation
+        :param alpha: (Default value = 0.3) the alpha value of the color
 
         """
         logging.info(f"Adding era '{text}' with color {color}")
@@ -491,7 +505,8 @@ class Lifegraph:
         start_position = self.__to_date_position(start_date)
         end_position = self.__to_date_position(end_date)
 
-        self.eras.append(Era(text, start_position, end_position, color, alpha=alpha))
+        self.eras.append(
+            Era(text, start_position, end_position, color, alpha=alpha))
 
         label_point = self.__get_label_point(
             hint=None, side=side, default_x=self.xmax, default_y=np.average((start_position.y, end_position.y)), is_Era=True)
@@ -506,15 +521,15 @@ class Lifegraph:
         self.annotations.append(a)
 
     def add_era_span(self, text, start_date, end_date, color='g', hint=None, side=None, color_start_and_end_markers=False):
-        """
+        """Add a dumbbell around a section of your life
 
-        :param text: param start_date:
-        :param start_date: param end_date:
-        :param color: Default value = 'g')
-        :param hint: Default value = None)
-        :param side: Default value = None)
+        :param text: The text labeling the span
+        :param start_date: When the era started
+        :param end_date: When the era ended
+        :param color: Default value = 'g') A matplotlib color
+        :param hint: Default value = None) Mutually exclusive with side, a Point indicating where the label should be placed. This position will be honored if possible
+        :param side: Default value = None) Mutually exclusive with hint. If Side.LEFT, the label will be on the left of the graph. Is Side.RIGHT, the label will be placed on the ride side of the graph
         :param color_start_and_end_markers: Default value = False) Colors the sqaures indicating the start and end date on the graph the same color as the text if True. The sqaures are the default color of the graph squares otherwise
-        :param end_date: 
 
         """
         logging.info(f"Adding era span '{text}' with color {color}")
@@ -550,18 +565,22 @@ class Lifegraph:
                                            color=color, event_point=event_point, font_size=20.0, put_circle_around_point=False))
 
     def add_watermark(self, text):
-        """
+        """Adds a watermark to the graph. 
+        
+        If this function is not called, no watermark is drawn.
 
-        :param text: 
+        :param text: The text of the watermark
 
         """
         self.watermark_text = text
 
     def add_title(self, text, fontsize=None):
-        """
+        """Adds a title to the graph.
 
-        :param text: 
-        :param fontsize:  (Default value = None)
+        If this function is not called, no title is drawn.
+
+        :param text: The text to display as the title of the graph
+        :param fontsize: (Default value = None)
 
         """
         self.title = text
@@ -569,9 +588,11 @@ class Lifegraph:
             self.title_fontsize = fontsize
 
     def add_image(self, image_name, alpha=1):
-        """
+        """Adds an image that is cliped to the axes size of the graph.
 
-        :param image_name: 
+        If this function is not called, no image is drawn.
+
+        :param image_name: param alpha:  (Default value = 1)
         :param alpha:  (Default value = 1)
 
         """
@@ -579,15 +600,15 @@ class Lifegraph:
         self.image_alpha = alpha
 
     def show(self):
-        """ """
+        """Show the grpah"""
         self.ax.show()
 
     def close(self):
-        """ """
+        """Close the graph"""
         self.ax.close()
 
     def save(self, name, transparent=False):
-        """
+        """Save the graph.
 
         :param name: The name and location the file should be saved at
         :param transparent: Default value = False)
@@ -598,7 +619,7 @@ class Lifegraph:
         plt.savefig(name, transparent=transparent, bbox_inches="tight")
 
     def __draw(self):
-        """ """
+        """Internal, trigger drawing of the graph"""
         plt.rc('text', usetex=True)
         xs = np.arange(1, self.xmax+1)
         ys = [np.arange(0, self.ymax) for i in range(self.xmax)]
@@ -622,7 +643,7 @@ class Lifegraph:
         self.ax.set_aspect('equal', adjustable='box', share=True)
 
     def __draw_xaxis(self):
-        """ """
+        """Internal, draw the components of the x-axis"""
         self.ax.set_xlim(self.xlims)
         # put x ticks on top
         xticks = [1]
@@ -638,7 +659,7 @@ class Lifegraph:
             width=0, direction='out', pad=self.inner_padx)
 
     def __draw_yaxis(self):
-        """ """
+        """Internal, draw the components of the y-axis"""
         self.ax.set_ylim(self.ylims)
         # set y ticks
         yticks = [*range(0, self.ymax, 5)]
@@ -651,7 +672,7 @@ class Lifegraph:
         self.ax.invert_yaxis()
 
     def __draw_annotations(self):
-        """ """
+        """Internal, put all of the annotations on the graph"""
         final = self.__resolve_annotation_conflicts(self.annotations)
 
         for a in final:
@@ -669,10 +690,10 @@ class Lifegraph:
                                              connectionstyle="arc3",
                                              color=a.color,
                                              shrinkB=a.shrink,
-                                             relpos=a.relpos)) #search for 'relpos' on https://matplotlib.org/tutorials/text/annotations.html
+                                             relpos=a.relpos))  # search for 'relpos' on https://matplotlib.org/tutorials/text/annotations.html
 
     def __draw_eras(self):
-        """ """
+        """Internal, draw all of the eras on the graph"""
         xmin = self.ax.transLimits.transform((1-.5, 0))[0]
         xmax = self.ax.transLimits.transform((self.xmax+.5, 0))[0]
         for era in self.eras:
@@ -692,7 +713,13 @@ class Lifegraph:
                                     alpha=era.alpha, xmin=xmin, xmax=xmax)
 
     def __draw_era_spans(self):
-        """ """
+        """Internal, draw all of the dumbbell era spans on the graph
+
+        This is done by placing a circle around the start and end point. Then a line is drawn
+        starting at the edge of each circle. The edge is found using a quadrant sensitive inverse
+        tangent function and parametric equations of a circle.
+        
+        """
         for era in self.era_spans:
             radius = .5
             circle1 = plt.Circle((era.start.x, era.start.y), radius,
@@ -734,26 +761,27 @@ class Lifegraph:
             self.ax.add_line(l)
 
     def __draw_watermark(self):
-        """ """
+        """Internal, draw the watermakr"""
         if self.watermark_text is not None:
             self.fig.text(0.5, 0.5, self.watermark_text,
                           fontsize=100, color='gray',
                           ha='center', va='center', alpha=0.3, rotation=65, transform=self.ax.transAxes)
 
     def __draw_title(self):
-        """ """
+        """Internal, draw the title"""
         if self.title is not None:
             self.fig.suptitle(self.title, fontsize=self.title_fontsize)
 
     def __draw_image(self):
-        """ """
+        """Internal, draw the image"""
         if self.image_name is not None:
             img = mpimg.imread(self.image_name)
             extent = (0.5, self.xmax+0.5, -0.5, self.ymax-0.5)
-            self.ax.imshow(img, extent=extent, origin='lower', alpha=self.image_alpha)
+            self.ax.imshow(img, extent=extent, origin='lower',
+                           alpha=self.image_alpha)
 
     def __resolve_annotation_conflicts(self, annotations):
-        """Put annotation text labels on the graph while avoiding conflicts.
+        """Internal, Put annotation text labels on the graph while avoiding conflicts.
         
         This method decides the final (x, y) coordinates for the graph such that
         no two text label bounding boxes overlap. This happens by placing the labels
@@ -802,7 +830,7 @@ class Lifegraph:
         # for the left, we want to prioritze labels
         # with lower x values to minimize the crossover of annotation lines
         # for the right, we want to prioritize labels that are closer
-        # to the right side of the graph to minimuze the crossover of annotation lines 
+        # to the right side of the graph to minimuze the crossover of annotation lines
         left.sort(key=lambda a: (a.event_point.y, a.event_point.x))
         right.sort(key=lambda a: (a.event_point.y, -a.event_point.x))
 
@@ -824,9 +852,9 @@ class Lifegraph:
         return final
 
     def __to_date_position(self, date):
-        """
+        """Internal, compose a DatePosition from a date
 
-        :param date: 
+        :param date: A datetime
 
         """
         delta = date - self.birthdate
@@ -843,20 +871,20 @@ class Lifegraph:
         x = week % self.xmax + 1
 
         return DatePosition(x, year, date)
-    
-    def __leap_years_before(self, date):
-        """
 
-        :param date: 
+    def __leap_years_before(self, date):
+        """Internal, determine the number of leap days that have happened since year 0
+
+        :param date: A datetime
 
         """
         year = date.year
         return year // 4 - year // 100 + year // 400
-    
-    def __is_leap_year(self, date):
-        """
 
-        :param date: 
+    def __is_leap_year(self, date):
+        """Internal, returns True if the input is a leap year, False otherwise
+
+        :param date: A datetime
 
         """
         # https://docs.microsoft.com/en-us/office/troubleshoot/excel/determine-a-leap-year
@@ -869,9 +897,9 @@ class Lifegraph:
         return False
 
     def __sanitize_hint(self, hint):
-        """Hints should have an x value < 0 or bigger than self.xmax
+        """Internal, Hints should have an x value < 0 or bigger than self.xmax
 
-        :param hint: 
+        :param hint: A point or a tuple or 1x2 array
 
         """
         # TODO: what should this be?
@@ -888,9 +916,9 @@ class Lifegraph:
         return hint
 
     def __set_annotation_bbox(self, a):
-        """
+        """Internal, determine the bounding box of some text to aid in layout
 
-        :param a: 
+        :param a: A string of text
 
         """
         # put the text on the plot temporarily so that we can determine the width of the text
@@ -908,13 +936,13 @@ class Lifegraph:
         t.remove()
 
     def __get_label_point(self, hint=None, side=None, default_x=0, default_y=0, is_Era=False):
-        """
+        """Internal, determine the initial position of the label using the defaults and the hint or side
 
-        :param hint: (Default value = None)
-        :param side:  (Default value = None)
-        :param default_x:  (Default value = 0)
-        :param default_y:  (Default value = 0)
-        :param is_Era:  (Default value = False)
+        :param hint: (Default value = None) A Point, tuple, or 1x2 array
+        :param side: (Default value = None) A Side
+        :param default_x: (Default value = 0) Value in data coordinates
+        :param default_y: (Default value = 0) Value in data coordinates
+        :param is_Era: (Default value = False) Is this an era? If so, we want to set the labelx to start at 1 so that the annotation is drawn closer to the graph
 
         """
         if (hint is not None and side is not None):
