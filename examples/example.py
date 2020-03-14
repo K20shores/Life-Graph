@@ -19,7 +19,7 @@ def main():
     g.add_era("High School", date(2005, 8, 24), date(2009, 6, 5), '#00838f')
     g.add_era("College", date(2009, 9, 1), date(2013, 12, 14), (80/255, 0, 0), side=Side.LEFT, font_size=30)
 
-    g.add_era_span("Pregnant with Bilbo Bagginses", date(2016, 1, 22), date(2016, 10, 16), '#D2691E', hint=Point(53, 28))
+    g.add_era_span("Pregnant with Bilbo Bagginses", date(2016, 1, 22), date(2016, 10, 16), '#D2691E', hint=Point(56, 28))
 
     g.add_title("Our Life, Together")
 
