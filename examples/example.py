@@ -27,5 +27,6 @@ def main():
         g.show_max_age_label()
 
         g.save(f"examples/lifegraph_{sz.name}.png")
+        g.close()
 
 main()

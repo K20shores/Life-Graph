@@ -1,21 +1,16 @@
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.lines as mlines
-import matplotlib.image as mpimg
-import numpy as np
-import datetime
-import random
-import logging
-
-from matplotlib.transforms import Bbox
-from matplotlib import colors as mcolors
 from datetime import date
-from dateutil import rrule
 from dateutil.relativedelta import relativedelta
 from enum import Enum
-
-logging.basicConfig(filename='app.log', filemode='w',
-                    format='[%(asctime)s-%(name)s] [%(levelname)s] %(message)s', level=logging.DEBUG)
+from matplotlib import colors as mcolors
+from matplotlib.transforms import Bbox
+import datetime
+import gc
+import matplotlib.image as mpimg
+import matplotlib.lines as mlines
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import random
 
 exclude = []
 colors = [(key, val)
@@ -1039,12 +1034,15 @@ class LifegraphParams:
                     "maxage.fontsize": 2,
                     "figure.title.yposition": 1.1,
                     "annotation.marker.size": .001,
-                    "annotation.edge.width": 1.0,
+                    "annotation.edge.width": 0.1,
                     "annotation.line.width": 0.1,
                     "annotation.shrinkA": 0,
                     #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
                     "annotation.left.offset": 5,
-                    "annotation.right.offset": 5
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": .2
                 }
             }
         elif papersize == Papersize.HalfLetter:
@@ -1458,7 +1456,6 @@ class Lifegraph:
         :param max_age: (Default value = 90) The ending age of the graph
 
         """
-        logging.info(f"Initializing lifegraph")
         if birthdate is None or not isinstance(birthdate, datetime.date):
             raise ValueError("birthdate must be a valid datetime.date object")
 
@@ -1566,7 +1563,6 @@ class Lifegraph:
         :param color_square: Default value = True) Colors the sqaure on the graph the same color as the text if True. The sqaure is the default color of the graph squares otherwise
 
         """
-        logging.info(f"Adding life event '{text}' with color {color}")
         if (date < self.birthdate or date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
@@ -1598,7 +1594,6 @@ class Lifegraph:
         :param alpha: (Default value = 0.3) the alpha value of the color
 
         """
-        logging.info(f"Adding era '{text}' with color {color}")
         if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
@@ -1639,7 +1634,6 @@ class Lifegraph:
         :param color_start_and_end_markers: Default value = False) Colors the sqaures indicating the start and end date on the graph the same color as the text if True. The sqaures are the default color of the graph squares otherwise
 
         """
-        logging.info(f"Adding era span '{text}' with color {color}")
         if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
@@ -1713,7 +1707,9 @@ class Lifegraph:
 
     def close(self):
         """Close the graph"""
-        self.ax.close()
+        self.fig.clf()
+        plt.close()
+        gc.collect()
 
     def save(self, name, transparent=False):
         """Save the graph.
@@ -1722,7 +1718,6 @@ class Lifegraph:
         :param transparent: Default value = False)
 
         """
-        logging.info(f"Saving lifegraph with name {name}.")
         self.__draw()
         plt.savefig(name, transparent=transparent)
     #endregion Public drawing methods
