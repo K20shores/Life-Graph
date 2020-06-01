@@ -140,3 +140,4 @@ dmypy.json
 .pytype/
 
 me.py
+lifegraph.code-workspace
