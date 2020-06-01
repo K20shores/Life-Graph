@@ -1,21 +1,16 @@
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.lines as mlines
-import matplotlib.image as mpimg
-import numpy as np
-import datetime
-import random
-import logging
-
-from matplotlib.transforms import Bbox
-from matplotlib import colors as mcolors
 from datetime import date
-from dateutil import rrule
 from dateutil.relativedelta import relativedelta
 from enum import Enum
-
-logging.basicConfig(filename='app.log', filemode='a',
-                    format='[%(asctime)s-%(name)s] [%(levelname)s] %(message)s', level=logging.INFO)
+from matplotlib import colors as mcolors
+from matplotlib.transforms import Bbox
+import datetime
+import gc
+import matplotlib.image as mpimg
+import matplotlib.lines as mlines
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import random
 
 exclude = []
 colors = [(key, val)
@@ -112,7 +107,7 @@ class Marker(Point):
 class Annotation(Point):
     """A class to hold the text of an annotation with methods to help layout the text."""
 
-    def __init__(self, date, text, label_point, color='black', bbox=None, event_point=None, font_size=10.0, put_circle_around_point=True, shrink=0, marker=None, relpos=(.5, .5)):
+    def __init__(self, date, text, label_point, color='black', bbox=None, event_point=None, put_circle_around_point=True, marker=None, relpos=(.5, .5)):
         """Initialize the Annotation class. THe base is a Point class.
 
         :param date: When the event occurred
@@ -121,7 +116,6 @@ class Annotation(Point):
         :param color: (Default value = 'black') A matplotlib color
         :param bbox: (Default value = None) The bounding box of the point
         :param event_point: (Default value = None) Where on the graph the event is located
-        :param font_size: (Default value = 10.0) A font size
         :param put_circle_around_point: (Default value = True) Should the event point be circled on the graph
         :param shrink: (Default value = 0) How much from the event point should the arrow stop
         :param marker: (Default value = None) A Marker class
@@ -134,9 +128,7 @@ class Annotation(Point):
         self.color = color
         self.bbox = bbox
         self.event_point = event_point
-        self.font_size = font_size
         self.put_circle_around_point = put_circle_around_point
-        self.shrink = shrink
         self.marker = marker
         self.relpos = relpos
 
@@ -198,7 +190,7 @@ class Annotation(Point):
 
         return True
 
-    def xy_overlapping_width_height(self, that, epsilon):
+    def get_bbox_overlap(self, that, epsilon):
         """Detmerine by how much the two annotation bounding boxes overlap
 
         :param that: an Annotation
@@ -213,6 +205,26 @@ class Annotation(Point):
             max(self.bbox.xmin, that.bbox.xmin)
         height = min(self.bbox.ymax, that.bbox.ymax) - \
             max(self.bbox.ymin, that.bbox.ymin)
+
+        height = abs(that.bbox.ymax - self.bbox.ymin) + epsilon
+
+        return (width, height)
+
+    def get_xy_correction(self, that, epsilon):
+        """Detmerine by how much the two annotation bounding boxes overlap
+
+        :param that: an Annotation
+        :param epsilon: A real number that will add a buffer space between the two label text bounding boxes
+
+        """
+        if (not isinstance(that, Annotation)):
+            raise ValueError("Argument for intersects should be an annotation")
+
+        # IDK, what to do about the width
+        # this will really be situational depending on the side of the
+        # graph that we are on
+        width = abs(that.bbox.xmax - self.bbox.xmin) + epsilon
+        height = abs(that.bbox.ymax - self.bbox.ymin) + epsilon
 
         return (width, height)
 
@@ -292,27 +304,1143 @@ class EraSpan(Era):
         self.end_marker = end_marker
 
 
-class Papersize:
+class Papersize(Enum):
     """A class holding papersize in inches"""
-    _4A0 = [66.2, 93.6]
-    _2A0 = [46.8, 66.2]
-    A0 = [33.1, 46.8]
-    A1 = [23.4, 33.1]
-    A2 = [16.5, 23.4]
-    A3 = [11.7, 16.5]
-    A4 = [8.3, 11.7]
-    A5 = [5.8, 8.3]
-    A6 = [4.1, 5.8]
-    A7 = [2.9, 4.1]
-    A8 = [2.0, 2.9]
-    A9 = [1.5, 2.0]
-    A10 = [1.0, 1.5]
-    HalfLetter = [5.5, 8.5]
-    Letter = [8.5, 11.0]
-    Legal = [8.5, 14.0]
-    JuniorLegal = [5.0, 8.0]
-    Ledger = [11.0, 17.0]
-    Tabloid = [11.0, 17.0]
+    A0 = 1, #[33.1, 46.8] inches
+    A1 = 2, #[23.4, 33.1] inches
+    A2 = 3, #[16.5, 23.4] inches
+    A3 = 4, #[11.7, 16.5] inches
+    A4 = 5, #[8.3, 11.7] inches
+    A5 = 6, #[5.8, 8.3] inches
+    A6 = 7, #[4.1, 5.8] inches
+    A7 = 8, #[2.9, 4.1] inches
+    A8 = 9, #[2.0, 2.9] inches
+    A9 = 10, #[1.5, 2.0] inches
+    A10 = 11, #[1.0, 1.5] inches
+    HalfLetter = 12, #[5.5, 8.5] inches
+    Letter = 13, #[8.5, 11.0] inches
+    Legal = 14, #[8.5, 14.0] inches
+    JuniorLegal = 15, #[5.0, 8.0] inches
+    Ledger = 16, #[11.0, 17.0] inches
+    Tabloid = 17 #[17.0, 11.0] inches
+
+
+class LifegraphParams:
+    """A class that defines the defaults for drawing by papersize"""
+
+    def __init__(self, papersize):
+        d = None
+        if papersize == Papersize.A0:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 34,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [33.1, 46.8],
+                    "figure.titlesize": 60,
+                    "figure.constrained_layout.use": False,
+                    "font.size": 28,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 1.0,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 1.00,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 15.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.05,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 20,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 20,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.25, 1.03),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.02, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 32,
+                    "figure.title.yposition": 1.00,
+                    "annotation.marker.size": 28.0,
+                    "annotation.edge.width": 2.0,
+                    "annotation.line.width": 2.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 3,
+                    "annotation.right.offset": 3,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.A1:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 26,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [23.4, 33.1],
+                    "figure.titlesize": 34,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 24,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.50,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 10.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.25,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 16,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 16,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.05),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 26,
+                    "figure.title.yposition": 0.98,
+                    "annotation.marker.size": 18.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.A2:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 16,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [16.5, 23.4],
+                    "figure.titlesize": 20,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 16,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.50,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 6.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.25,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 10,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 10,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.05),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 16,
+                    "figure.title.yposition": 0.98,
+                    "annotation.marker.size": 6.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.A3:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 16,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [11.7, 16.5],
+                    "figure.titlesize": 20,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 16,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.50,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 5.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.25,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 10,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 10,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.05),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 16,
+                    "figure.title.yposition": 0.98,
+                    "annotation.marker.size": 8.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.A4:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 16,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [8.3, 11.7],
+                    "figure.titlesize": 20,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 16,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.50,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 3.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.05,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 10,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 10,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.08),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 16,
+                    "figure.title.yposition": 1.0,
+                    "annotation.marker.size": 6.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.A5:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 10,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [5.8, 8.3],
+                    "figure.titlesize": 20,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 10,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.40,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 2.5,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.05,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 6,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 6,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.08),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 10,
+                    "figure.title.yposition": 0.97,
+                    "annotation.marker.size": 6.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.A6:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 8,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [4.1, 5.8],
+                    "figure.titlesize": 18,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 7,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.3,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.30,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 1.5,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.05,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 4,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 4,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.08),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 8,
+                    "figure.title.yposition": 0.97,
+                    "annotation.marker.size": 2.0,
+                    "annotation.edge.width": 0.6,
+                    "annotation.line.width": 0.5,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 0.5
+                }
+            }
+        elif papersize == Papersize.A7:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 4,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [2.9, 4.1],
+                    "figure.titlesize": 10,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 4,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.2,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.20,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 1.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.05,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 3,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 3,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.04),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 6,
+                    "figure.title.yposition": 0.97,
+                    "annotation.marker.size": 2.0,
+                    "annotation.edge.width": 0.3,
+                    "annotation.line.width": 0.5,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 0.5
+                }
+            }
+        elif papersize == Papersize.A8:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 3,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [2.0, 2.9],
+                    "figure.titlesize": 6,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 2,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.2,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.20,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 0.8,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.05,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 2,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 2,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.04),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 4,
+                    "figure.title.yposition": 0.97,
+                    "annotation.marker.size": 1.8,
+                    "annotation.edge.width": 0.3,
+                    "annotation.line.width": 0.3,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 0.5
+                }
+            }
+        elif papersize == Papersize.A9:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 2,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [1.5, 2.0],
+                    "figure.titlesize": 4,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 2,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.2,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.10,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 0.54,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.05,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 1,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 1,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.04),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 2,
+                    "figure.title.yposition": 0.97,
+                    "annotation.marker.size": 1.2,
+                    "annotation.edge.width": 0.2,
+                    "annotation.line.width": 0.2,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 0.5
+                }
+            }
+        elif papersize == Papersize.A10:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 4,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [1.0, 1.5],
+                    "figure.titlesize": 6,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 1,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.5,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 0.001,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.05,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 1,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 1,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.08),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.02, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 2,
+                    "figure.title.yposition": 1.1,
+                    "annotation.marker.size": .001,
+                    "annotation.edge.width": 0.1,
+                    "annotation.line.width": 0.1,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 5,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": .2
+                }
+            }
+        elif papersize == Papersize.HalfLetter:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 10,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [5.5, 8.5],
+                    "figure.titlesize": 20,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 10,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.40,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 2.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.05,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 5,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 5,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.45, 1.05),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 10,
+                    "figure.title.yposition": 0.97,
+                    "annotation.marker.size": 6.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 5,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.Letter:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 10,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [8.5, 11.0],
+                    "figure.titlesize": 20,
+                    "figure.constrained_layout.use": False,
+                    "font.size": 10,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.40,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 3.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.50,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 5,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 5,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.40, 1.03),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 12,
+                    "figure.title.yposition": 0.95,
+                    "annotation.marker.size": 6.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 3,
+                    "annotation.right.offset": 3,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.Legal:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 10,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [8.5, 14.0],
+                    "figure.titlesize": 20,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 10,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.40,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 4.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.50,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 5,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 5,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.40, 1.03),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 14,
+                    "figure.title.yposition": 0.95,
+                    "annotation.marker.size": 6.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 3,
+                    "annotation.right.offset": 2,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.JuniorLegal:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 10,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [5.0, 8.0],
+                    "figure.titlesize": 20,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 10,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.40,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 2.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.50,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 5,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 5,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.40, 1.05),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 10,
+                    "figure.title.yposition": 0.95,
+                    "annotation.marker.size": 6.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 3,
+                    "annotation.right.offset": 2,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.Ledger:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 10,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [11.0, 17.0],
+                    "figure.titlesize": 20,
+                    "figure.constrained_layout.use": True,
+                    "font.size": 10,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.40,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 5.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.50,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 8,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 8,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.40, 1.03),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 10,
+                    "figure.title.yposition": 0.99,
+                    "annotation.marker.size": 10.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 3,
+                    "annotation.right.offset": 2,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        elif papersize == Papersize.Tabloid:
+            d = {
+                "rcParams": {
+                    "axes.labelsize": 10,
+                    "axes.labelcolor": 'blue',
+                    "axes.linewidth": 0.0,
+                    "axes.spines.bottom": False,
+                    "axes.spines.left": False,
+                    "axes.spines.right": False,
+                    "axes.spines.top": False,
+                    "figure.figsize": [17.0, 11.0],
+                    "figure.titlesize": 20,
+                    "figure.constrained_layout.use": False,
+                    "font.size": 10,
+                    "lines.linestyle": 'none',
+                    "lines.linewidth": 0.5,
+                    "lines.marker": 's',
+                    "lines.markeredgecolor": 'black',
+                    "lines.markeredgewidth": 0.40,
+                    "lines.markerfacecolor": 'none',
+                    "lines.markersize": 4.0,
+                    "markers.fillstyle": 'none',
+                    "savefig.pad_inches": 0.50,
+                    "text.usetex": True,
+                    "xtick.bottom": False,
+                    "xtick.color": "black",
+                    "xtick.labelsize": 8,
+                    "xtick.labeltop": True,
+                    "xtick.major.bottom": False,
+                    "xtick.major.pad": -3,
+                    "xtick.major.top": True,
+                    "xtick.minor.bottom": False,
+                    "xtick.minor.top": False,
+                    "xtick.top": False,
+                    "ytick.color": "black",
+                    "ytick.labelsize": 8,
+                    "ytick.left": False,
+                    "ytick.major.left": True,
+                    "ytick.major.pad": -4,
+                    "ytick.major.right": False,
+                    "ytick.minor.left": False,
+                    "ytick.minor.right": False,
+                    "ytick.right": False,
+                },
+                "otherParams": {
+                    "xlabel.position": (0.40, 1.03),
+                    "xlabel.color": None,  # defaults to "axes.labelcolor"
+                    "xlabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "ylabel.position": (-0.03, 0.90),
+                    "ylabel.color": None,  # defaults to "axes.labelcolor"
+                    "ylabel.fontsize": None,  # defaults to "axes.labelsize"
+                    "maxage.fontsize": 18,
+                    "figure.title.yposition": 0.99,
+                    "annotation.marker.size": 10.0,
+                    "annotation.edge.width": 0.8,
+                    "annotation.line.width": 1.0,
+                    "annotation.shrinkA": 0,
+                    #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
+                    "annotation.left.offset": 10,
+                    "annotation.right.offset": 10,
+                    "era.span.linestyle": "-",
+                    "era.span.markersize": 0,
+                    "era.line.linewidth": 1
+                }
+            }
+        else:
+            raise ValueError("Unknown paper size")
+
+        self.settings = d
+        self.rcParams = d["rcParams"]
+        self.otherParams = d["otherParams"]
 
 
 class Lifegraph:
@@ -328,17 +1456,14 @@ class Lifegraph:
         :param max_age: (Default value = 90) The ending age of the graph
 
         """
-        logging.info(f"Initializing lifegraph")
         if birthdate is None or not isinstance(birthdate, datetime.date):
             raise ValueError("birthdate must be a valid datetime.date object")
 
         self.birthdate = birthdate
 
-        # figure size and resolution
-        self.size = size
-        self.dpi = dpi
-        self.fig = plt.figure(figsize=self.size, dpi=self.dpi)
-        self.ax = self.fig.add_subplot()
+        self.settings = LifegraphParams(size)
+        self.settings.rcParams["figure.dpi"] = dpi
+
         self.renderer = None
 
         # the data limits, we want a grid of 52 weeks by 90 years
@@ -351,40 +1476,18 @@ class Lifegraph:
         self.xlims = [self.xmin, self.xmax]
         self.ylims = [self.ymin, self.ymax]
 
-        self.fontsize = 25
+        self.draw_max_age = False
 
         self.title = None
-        self.title_fontsize = self.fontsize
 
         self.image_name = None
         self.image_alpha = 1
 
         self.xaxis_label = r'Week of the Year $\longrightarrow$'
-        self.xaxis_color = 'b'
-        self.xaxis_position = (0.20, 1.02)
-        self.xaxis_fontsize = self.fontsize
 
         self.yaxis_label = r'$\longleftarrow$ Age'
-        self.yaxis_color = 'b'
-        self.yaxis_position = (-0.02, 0.95)
-        self.yaxis_fontsize = self.fontsize
-
-        # drawing controls
-        self.inner_padx = -4
-        self.inner_pady = -4
-        self.color = 'black'
-        self.marker = 's'
-        self.fillstyle = 'none'
-        self.linestyle = 'none'
-        self.grid_mew = .5
-        self.left_annotation_offset = 3
-        self.right_annotation_offset = 3
-        self.annotation_marker_size = 12
-        self.annotation_edge_width = 1.5
 
         self.watermark_text = None
-
-        self.era_shrink = 10
 
         self.label_space_epsilon = label_space_epsilon
 
@@ -392,6 +1495,7 @@ class Lifegraph:
         self.eras = []
         self.era_spans = []
 
+    #region Public drawing methods
     def format_x_axis(self, text=None, positionx=None, positiony=None, color=None, fontsize=None):
         """Format the x axis. This method is required.
 
@@ -405,18 +1509,18 @@ class Lifegraph:
         if text is not None:
             self.xaxis_label = text
 
-        x, y = self.xaxis_position
+        x, y = self.settings.otherParams["xlabel.position"]
         if positionx is not None:
             x = positionx
         if positiony is not None:
             y = positiony
-        self.xaxis_position = (x, y)
+        self.settings.otherParams["xlabel.position"] = (x, y)
 
         if color is not None:
-            self.xaxis_color = color
+            self.settings.otherParams["xlabel.color"] = color
 
         if fontsize is not None:
-            self.xaxis_fontsize = fontsize
+            self.settings.otherParams["xlabel.fontsize"] = fontsize
 
     def format_y_axis(self, text=None, positionx=None, positiony=None, color=None, fontsize=None):
         """Format the y axis. This method is required.
@@ -429,26 +1533,24 @@ class Lifegraph:
 
         """
         if text is not None:
-            self.yaxis_label = text
+            self.xaxis_label = text
 
-        x, y = self.yaxis_position
+        x, y = self.settings.otherParams["ylabel.position"]
         if positionx is not None:
             x = positionx
         if positiony is not None:
             y = positiony
-        self.yaxis_position = (x, y)
+        self.settings.otherParams["ylabel.position"] = (x, y)
 
         if color is not None:
-            self.yaxis_color = color
+            self.settings.otherParams["ylabel.color"] = color
 
         if fontsize is not None:
-            self.yaxis_fontsize = fontsize
+            self.settings.otherParams["ylabel.fontsize"] = fontsize
 
     def show_max_age_label(self):
         """Places the max age on the bottom right of the plot"""
-        self.ax.text(self.xmax+3, self.ymax, str(self.ymax),
-                     fontsize=self.fontsize, color='black',
-                     ha='center', va='bottom', transform=self.ax.transData)
+        self.draw_max_age = True
 
     def add_life_event(self, text, date, color=None, hint=None, side=None, color_square=True):
         """Label an event in your life
@@ -461,7 +1563,6 @@ class Lifegraph:
         :param color_square: Default value = True) Colors the sqaure on the graph the same color as the text if True. The sqaure is the default color of the graph squares otherwise
 
         """
-        logging.info(f"Adding life event '{text}' with color {color}")
         if (date < self.birthdate or date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
@@ -479,10 +1580,10 @@ class Lifegraph:
             marker = Marker(position.x, position.y, color=color)
 
         a = Annotation(date, text, label_point=label_point, color=color,
-                       event_point=Point(position.x, position.y), shrink=self.annotation_marker_size / 2, marker=marker)
+                       event_point=Point(position.x, position.y), marker=marker)
         self.annotations.append(a)
 
-    def add_era(self, text, start_date, end_date, color, side=None, font_size=20, alpha=0.3):
+    def add_era(self, text, start_date, end_date, color=None, side=None, alpha=0.3):
         """Color in a section of your life
 
         :param text: The label text for the era
@@ -490,11 +1591,9 @@ class Lifegraph:
         :param end_date: When the event ended
         :param color: A color useable by any matplotlib object
         :param side: (Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
-        :param font_size: (Default value = 20) the font size passed to matplotlib.axes.annotation
         :param alpha: (Default value = 0.3) the alpha value of the color
 
         """
-        logging.info(f"Adding era '{text}' with color {color}")
         if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
@@ -504,6 +1603,9 @@ class Lifegraph:
 
         start_position = self.__to_date_position(start_date)
         end_position = self.__to_date_position(end_date)
+
+        if color is None:
+            color = random_color()
 
         self.eras.append(
             Era(text, start_position, end_position, color, alpha=alpha))
@@ -517,7 +1619,7 @@ class Lifegraph:
         middle_date = start_date + (end_date - start_date)/2
 
         a = Annotation(middle_date, text, label_point=label_point, color=color,
-                       event_point=label_point, font_size=font_size, put_circle_around_point=False, shrink=self.era_shrink)
+                       event_point=label_point, put_circle_around_point=False)
         self.annotations.append(a)
 
     def add_era_span(self, text, start_date, end_date, color='g', hint=None, side=None, color_start_and_end_markers=False):
@@ -532,7 +1634,6 @@ class Lifegraph:
         :param color_start_and_end_markers: Default value = False) Colors the sqaures indicating the start and end date on the graph the same color as the text if True. The sqaures are the default color of the graph squares otherwise
 
         """
-        logging.info(f"Adding era span '{text}' with color {color}")
         if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
@@ -562,7 +1663,7 @@ class Lifegraph:
             (start_position.y, end_position.y)))
 
         self.annotations.append(Annotation(middle_date, text, label_point=label_point,
-                                           color=color, event_point=event_point, font_size=20.0, put_circle_around_point=False))
+                                           color=color, event_point=event_point, put_circle_around_point=False))
 
     def add_watermark(self, text):
         """Adds a watermark to the graph. 
@@ -601,11 +1702,14 @@ class Lifegraph:
 
     def show(self):
         """Show the grpah"""
+        self.__draw()
         self.ax.show()
 
     def close(self):
         """Close the graph"""
-        self.ax.close()
+        self.fig.clf()
+        plt.close()
+        gc.collect()
 
     def save(self, name, transparent=False):
         """Save the graph.
@@ -614,18 +1718,22 @@ class Lifegraph:
         :param transparent: Default value = False)
 
         """
-        logging.info(f"Saving lifegraph with name {name}.")
         self.__draw()
-        plt.savefig(name, transparent=transparent, bbox_inches="tight")
+        plt.savefig(name, transparent=transparent)
+    #endregion Public drawing methods
 
+    #region Private drawing methods
     def __draw(self):
         """Internal, trigger drawing of the graph"""
-        plt.rc('text', usetex=True)
+        plt.rcParams.update(self.settings.rcParams)
+
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot()
+
         xs = np.arange(1, self.xmax+1)
         ys = [np.arange(0, self.ymax) for i in range(self.xmax)]
 
-        self.ax.plot(xs, ys, color=self.color, marker=self.marker,
-                     fillstyle=self.fillstyle, linestyle='none', mew=self.grid_mew)
+        self.ax.plot(xs, ys)
 
         self.__draw_xaxis()
         self.__draw_yaxis()
@@ -636,11 +1744,9 @@ class Lifegraph:
         self.__draw_watermark()
         self.__draw_title()
         self.__draw_image()
+        self.__draw_max_age()
 
-        # hide the horizontal and vertical lines
-        self.ax.set_frame_on(False)
-
-        self.ax.set_aspect('equal', adjustable='box', share=True)
+        self.ax.set_aspect('equal', share=True)
 
     def __draw_xaxis(self):
         """Internal, draw the components of the x-axis"""
@@ -648,49 +1754,60 @@ class Lifegraph:
         # put x ticks on top
         xticks = [1]
         xticks.extend(range(5, self.xmax+5, 5))
-        self.ax.xaxis.tick_top()
+        fs = self.settings.rcParams["axes.labelsize"] if self.settings.otherParams[
+            "xlabel.fontsize"] is None else self.settings.otherParams["xlabel.fontsize"]
+        color = self.settings.rcParams["axes.labelcolor"] if self.settings.otherParams[
+            "xlabel.color"] is None else self.settings.otherParams["xlabel.color"]
         self.ax.set_xticks(xticks)
         self.ax.set_xticklabels(xticks[:-1])
-        self.ax.set_xlabel(self.xaxis_label,
-                           color=self.xaxis_color, fontsize=self.xaxis_fontsize)
-        self.ax.xaxis.set_label_position('top')
-        self.ax.xaxis.set_label_coords(*self.xaxis_position)
-        self.ax.xaxis.set_tick_params(
-            width=0, direction='out', pad=self.inner_padx)
+        self.ax.set_xlabel(self.xaxis_label, fontsize=fs, color=color)
+        self.ax.xaxis.set_label_coords(
+            *self.settings.otherParams["xlabel.position"])
 
     def __draw_yaxis(self):
         """Internal, draw the components of the y-axis"""
         self.ax.set_ylim(self.ylims)
         # set y ticks
         yticks = [*range(0, self.ymax, 5)]
+        fs = self.settings.rcParams["axes.labelsize"] if self.settings.otherParams[
+            "ylabel.fontsize"] is None else self.settings.otherParams["ylabel.fontsize"]
+        color = self.settings.rcParams["axes.labelcolor"] if self.settings.otherParams[
+            "ylabel.color"] is None else self.settings.otherParams["ylabel.color"]
         self.ax.set_yticks(yticks)
-        self.ax.set_ylabel(self.yaxis_label,
-                           color=self.yaxis_color, fontsize=self.yaxis_fontsize)
-        self.ax.yaxis.set_label_coords(*self.yaxis_position)
-        self.ax.yaxis.set_tick_params(
-            width=0, direction='in', pad=self.inner_pady)
+        self.ax.set_ylabel(self.yaxis_label, fontsize=fs, color=color)
+        self.ax.yaxis.set_label_coords(
+            *self.settings.otherParams["ylabel.position"])
         self.ax.invert_yaxis()
 
     def __draw_annotations(self):
-        """Internal, put all of the annotations on the graph"""
+        """Internal, put all of the annotations on the graph
+        
+        The arrowprops keyword arguments to the annotation, shrinkB, is calculated so that
+        regardless of plot size, the edge of the annotaiton line ends at the edge of the circle
+        """
         final = self.__resolve_annotation_conflicts(self.annotations)
 
+        shrinkB = self.settings.rcParams["lines.markersize"]+self.settings.rcParams["lines.markeredgewidth"]
         for a in final:
             if a.put_circle_around_point:
-                self.ax.plot(a.event_point.x, a.event_point.y, marker='o', color=a.color,
-                             markerfacecolor='none', ms=self.annotation_marker_size, mew=self.annotation_edge_width)
+                self.ax.plot(a.event_point.x, a.event_point.y, marker='o', markeredgecolor=a.color,
+                             ms=self.settings.otherParams["annotation.marker.size"],
+                             mew=self.settings.otherParams["annotation.edge.width"])
 
             if a.marker is not None:
-                self.ax.plot(a.marker.x, a.marker.y, color=a.marker.color, marker=a.marker.marker,
-                             fillstyle=a.marker.fillstyle, linestyle='none', mew=self.grid_mew)
+                self.ax.plot(
+                    a.marker.x, a.marker.y, markeredgecolor=a.marker.color, marker=a.marker.marker)
 
             self.ax.annotate(a.text, xy=(a.event_point.x, a.event_point.y), xytext=(a.x, a.y),
-                             weight='bold', color=a.color, size=a.font_size, va='center',
+                             weight='bold', color=a.color, va='center', ha='left',
                              arrowprops=dict(arrowstyle='-',
-                                             connectionstyle="arc3",
+                                             connectionstyle='arc3',
                                              color=a.color,
-                                             shrinkB=a.shrink,
-                                             relpos=a.relpos))  # search for 'relpos' on https://matplotlib.org/tutorials/text/annotations.html
+                                             shrinkA=self.settings.otherParams["annotation.shrinkA"],
+                                             shrinkB=shrinkB,
+                                             # search for 'relpos' on https://matplotlib.org/tutorials/text/annotations.html
+                                             relpos=a.relpos,
+                                             linewidth=self.settings.otherParams["annotation.line.width"]))
 
     def __draw_eras(self):
         """Internal, draw all of the eras on the graph"""
@@ -723,9 +1840,9 @@ class Lifegraph:
         for era in self.era_spans:
             radius = .5
             circle1 = plt.Circle((era.start.x, era.start.y), radius,
-                                 color=era.color, fill=False, lw=self.annotation_edge_width)
+                                 color=era.color, fill=False, lw=self.settings.otherParams["annotation.edge.width"])
             circle2 = plt.Circle((era.end.x, era.end.y), radius,
-                                 color=era.color, fill=False, lw=self.annotation_edge_width)
+                                 color=era.color, fill=False, lw=self.settings.otherParams["annotation.edge.width"])
             self.ax.add_artist(circle1)
             self.ax.add_artist(circle2)
 
@@ -751,13 +1868,14 @@ class Lifegraph:
 
             if era.start_marker is not None:
                 self.ax.plot(era.start_marker.x, era.start_marker.y, color=era.start_marker.color, marker=era.start_marker.marker,
-                             fillstyle=era.start_marker.fillstyle, linestyle='none', mew=self.grid_mew)
+                             fillstyle=era.start_marker.fillstyle)
 
             if era.end_marker is not None:
                 self.ax.plot(era.end_marker.x, era.end_marker.y, color=era.end_marker.color, marker=era.end_marker.marker,
-                             fillstyle=era.end_marker.fillstyle, linestyle='none', mew=self.grid_mew)
+                             fillstyle=era.end_marker.fillstyle)
 
-            l = mlines.Line2D([x1, x2], [y1, y2], color=era.color)
+            l = mlines.Line2D([x1, x2], [y1, y2], color=era.color, linestyle=self.settings.otherParams["era.span.linestyle"],
+                              markersize=self.settings.otherParams["era.span.markersize"], linewidth=self.settings.otherParams["era.line.linewidth"])
             self.ax.add_line(l)
 
     def __draw_watermark(self):
@@ -770,7 +1888,8 @@ class Lifegraph:
     def __draw_title(self):
         """Internal, draw the title"""
         if self.title is not None:
-            self.fig.suptitle(self.title, fontsize=self.title_fontsize)
+            self.fig.suptitle(
+                self.title, y=self.settings.otherParams["figure.title.yposition"])
 
     def __draw_image(self):
         """Internal, draw the image"""
@@ -779,6 +1898,12 @@ class Lifegraph:
             extent = (0.5, self.xmax+0.5, -0.5, self.ymax-0.5)
             self.ax.imshow(img, extent=extent, origin='lower',
                            alpha=self.image_alpha)
+
+    def __draw_max_age(self):
+        if self.draw_max_age:
+            self.ax.text(self.xmax+3, self.ymax, str(self.ymax),
+                         fontsize=self.settings.otherParams["maxage.fontsize"],
+                         ha='center', va='bottom', transform=self.ax.transData)
 
     def __resolve_annotation_conflicts(self, annotations):
         """Internal, Put annotation text labels on the graph while avoiding conflicts.
@@ -808,10 +1933,12 @@ class Lifegraph:
             # to preserve hint values, only set the x value if it is inside the graph
             # or if it is not at least as far as the offset
             if a.y >= 0 and a.y <= self.ymax:
-                if ((a.x >= self.xmax / 2) and (a.x < self.xmax)) or (a.x >= self.xmax and a.x < self.xmax + self.right_annotation_offset):
-                    a.x = self.xmax + self.right_annotation_offset
-                elif ((a.x >= 0) and (a.x < self.xmax / 2)) or (a.x <= self.xmin and a.x > self.xmin - self.left_annotation_offset):
-                    a.x = self.xmin - self.left_annotation_offset - width
+                if ((a.x >= self.xmax / 2) and (a.x < self.xmax)) or (a.x >= self.xmax and a.x < self.xmax + self.settings.otherParams["annotation.right.offset"]):
+                    a.x = self.xmax + \
+                        self.settings.otherParams["annotation.right.offset"]
+                elif ((a.x >= 0) and (a.x < self.xmax / 2)) or (a.x <= self.xmin and a.x > self.xmin - self.settings.otherParams["annotation.left.offset"]):
+                    a.x = self.xmin - \
+                        self.settings.otherParams["annotation.left.offset"] - width
                 a.bbox.x0 = a.x
                 a.bbox.x1 = a.x + width
                 if (a.x >= self.xmax / 2):
@@ -840,7 +1967,7 @@ class Lifegraph:
             for unchecked in lst:
                 for checked in _f:
                     if unchecked.overlaps(checked):
-                        correction = unchecked.xy_overlapping_width_height(
+                        correction = unchecked.get_xy_correction(
                             checked, self.label_space_epsilon)
                         unchecked.update_Y_with_correction(correction)
                     if unchecked.is_within_epsilon_of(checked, self.label_space_epsilon):
@@ -872,30 +1999,6 @@ class Lifegraph:
 
         return DatePosition(x, year, date)
 
-    def __leap_years_before(self, date):
-        """Internal, determine the number of leap days that have happened since year 0
-
-        :param date: A datetime
-
-        """
-        year = date.year
-        return year // 4 - year // 100 + year // 400
-
-    def __is_leap_year(self, date):
-        """Internal, returns True if the input is a leap year, False otherwise
-
-        :param date: A datetime
-
-        """
-        # https://docs.microsoft.com/en-us/office/troubleshoot/excel/determine-a-leap-year
-        if date.year % 4 == 0:
-            if date.year % 100 == 0:
-                if date.year % 400 == 0:
-                    return True
-            else:
-                return False
-        return False
-
     def __sanitize_hint(self, hint):
         """Internal, Hints should have an x value < 0 or bigger than self.xmax
 
@@ -923,7 +2026,7 @@ class Lifegraph:
         """
         # put the text on the plot temporarily so that we can determine the width of the text
         t = self.ax.text(a.x, a.y, a.text, transform=self.ax.transData,
-                         ha='center', va='center', size=a.font_size)
+                         ha='center', va='center')
 
         if (self.renderer is None):
             self.renderer = self.fig.canvas.get_renderer()
@@ -963,3 +2066,4 @@ class Lifegraph:
                 labelx = self.xmax
 
         return Point(labelx, labely)
+    #endregion Private drawing methods
