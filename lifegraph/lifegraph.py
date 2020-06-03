@@ -341,16 +341,15 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [33.1, 46.8],
-                    "figure.titlesize": 60,
-                    "figure.constrained_layout.use": False,
-                    "font.size": 28,
+                    "figure.titlesize": 128,
+                    "font.size": 60,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 1.0,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
                     "lines.markeredgewidth": 1.00,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 15.0,
+                    "lines.markersize": 12.0,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.05,
                     "text.usetex": True,
@@ -375,14 +374,14 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.25, 1.03),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.02, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
-                    "maxage.fontsize": 32,
-                    "figure.title.yposition": 1.00,
+                    "maxage.fontsize": 38,
+                    "figure.title.yposition": 0.95,
                     "annotation.marker.size": 28.0,
                     "annotation.edge.width": 2.0,
                     "annotation.line.width": 2.0,
@@ -392,7 +391,8 @@ class LifegraphParams:
                     "annotation.right.offset": 3,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 200
                 }
             }
         elif papersize == Papersize.A1:
@@ -406,16 +406,15 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [23.4, 33.1],
-                    "figure.titlesize": 34,
-                    "figure.constrained_layout.use": True,
-                    "font.size": 24,
+                    "figure.titlesize": 42,
+                    "font.size": 28,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
                     "lines.markeredgewidth": 0.50,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 10.0,
+                    "lines.markersize": 9.0,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.25,
                     "text.usetex": True,
@@ -440,14 +439,14 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.05),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
-                    "maxage.fontsize": 26,
-                    "figure.title.yposition": 0.98,
+                    "maxage.fontsize": 32,
+                    "figure.title.yposition": 0.95,
                     "annotation.marker.size": 18.0,
                     "annotation.edge.width": 0.8,
                     "annotation.line.width": 1.0,
@@ -457,7 +456,8 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 160
                 }
             }
         elif papersize == Papersize.A2:
@@ -471,9 +471,8 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [16.5, 23.4],
-                    "figure.titlesize": 20,
-                    "figure.constrained_layout.use": True,
-                    "font.size": 16,
+                    "figure.titlesize": 42,
+                    "font.size": 28,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
                     "lines.marker": 's',
@@ -505,13 +504,13 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.05),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
-                    "maxage.fontsize": 16,
+                    "maxage.fontsize": 24,
                     "figure.title.yposition": 0.98,
                     "annotation.marker.size": 6.0,
                     "annotation.edge.width": 0.8,
@@ -522,7 +521,8 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 135
                 }
             }
         elif papersize == Papersize.A3:
@@ -536,16 +536,15 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [11.7, 16.5],
-                    "figure.titlesize": 20,
-                    "figure.constrained_layout.use": True,
-                    "font.size": 16,
+                    "figure.titlesize": 28,
+                    "font.size": 18,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
                     "lines.markeredgewidth": 0.50,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 5.0,
+                    "lines.markersize": 4.5,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.25,
                     "text.usetex": True,
@@ -570,14 +569,14 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.05),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
-                    "maxage.fontsize": 16,
-                    "figure.title.yposition": 0.98,
+                    "maxage.fontsize": 20,
+                    "figure.title.yposition": 0.95,
                     "annotation.marker.size": 8.0,
                     "annotation.edge.width": 0.8,
                     "annotation.line.width": 1.0,
@@ -587,13 +586,14 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 120
                 }
             }
         elif papersize == Papersize.A4:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 16,
+                    "axes.labelsize": 12,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -601,8 +601,7 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [8.3, 11.7],
-                    "figure.titlesize": 20,
-                    "figure.constrained_layout.use": True,
+                    "figure.titlesize": 24,
                     "font.size": 16,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
@@ -635,14 +634,14 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.08),
+                    "xlabel.position": (0.25, 1.08),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
                     "maxage.fontsize": 16,
-                    "figure.title.yposition": 1.0,
+                    "figure.title.yposition": 0.95,
                     "annotation.marker.size": 6.0,
                     "annotation.edge.width": 0.8,
                     "annotation.line.width": 1.0,
@@ -652,13 +651,14 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 110
                 }
             }
         elif papersize == Papersize.A5:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 10,
+                    "axes.labelsize": 8,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -667,15 +667,14 @@ class LifegraphParams:
                     "axes.spines.top": False,
                     "figure.figsize": [5.8, 8.3],
                     "figure.titlesize": 20,
-                    "figure.constrained_layout.use": True,
                     "font.size": 10,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
-                    "lines.markeredgewidth": 0.40,
+                    "lines.markeredgewidth": 0.20,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 2.5,
+                    "lines.markersize": 2.0,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.05,
                     "text.usetex": True,
@@ -700,7 +699,7 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.08),
+                    "xlabel.position": (0.25, 1.08),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
@@ -717,13 +716,14 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 90
                 }
             }
         elif papersize == Papersize.A6:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 8,
+                    "axes.labelsize": 7,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -732,15 +732,14 @@ class LifegraphParams:
                     "axes.spines.top": False,
                     "figure.figsize": [4.1, 5.8],
                     "figure.titlesize": 18,
-                    "figure.constrained_layout.use": True,
-                    "font.size": 7,
+                    "font.size": 9,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.3,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
-                    "lines.markeredgewidth": 0.30,
+                    "lines.markeredgewidth": 0.25,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 1.5,
+                    "lines.markersize": 1.25,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.05,
                     "text.usetex": True,
@@ -765,7 +764,7 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.08),
+                    "xlabel.position": (0.25, 1.08),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
@@ -782,13 +781,14 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 0.5
+                    "era.line.linewidth": 0.5,
+                    "watermark.fontsize": 70
                 }
             }
         elif papersize == Papersize.A7:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 4,
+                    "axes.labelsize": 3,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -796,9 +796,8 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [2.9, 4.1],
-                    "figure.titlesize": 10,
-                    "figure.constrained_layout.use": True,
-                    "font.size": 4,
+                    "figure.titlesize": 12,
+                    "font.size": 5,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.2,
                     "lines.marker": 's',
@@ -830,14 +829,14 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.04),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
                     "maxage.fontsize": 6,
-                    "figure.title.yposition": 0.97,
+                    "figure.title.yposition": 0.95,
                     "annotation.marker.size": 2.0,
                     "annotation.edge.width": 0.3,
                     "annotation.line.width": 0.5,
@@ -847,13 +846,14 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 0.5
+                    "era.line.linewidth": 0.5,
+                    "watermark.fontsize": 50
                 }
             }
         elif papersize == Papersize.A8:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 3,
+                    "axes.labelsize": 2,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -862,15 +862,14 @@ class LifegraphParams:
                     "axes.spines.top": False,
                     "figure.figsize": [2.0, 2.9],
                     "figure.titlesize": 6,
-                    "figure.constrained_layout.use": True,
-                    "font.size": 2,
+                    "font.size": 3,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.2,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
-                    "lines.markeredgewidth": 0.20,
+                    "lines.markeredgewidth": 0.15,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 0.8,
+                    "lines.markersize": 0.6,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.05,
                     "text.usetex": True,
@@ -895,14 +894,14 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.04),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
-                    "maxage.fontsize": 4,
-                    "figure.title.yposition": 0.97,
+                    "maxage.fontsize": 3,
+                    "figure.title.yposition": 0.95,
                     "annotation.marker.size": 1.8,
                     "annotation.edge.width": 0.3,
                     "annotation.line.width": 0.3,
@@ -912,7 +911,8 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 0.5
+                    "era.line.linewidth": 0.5,
+                    "watermark.fontsize": 35
                 }
             }
         elif papersize == Papersize.A9:
@@ -926,9 +926,8 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [1.5, 2.0],
-                    "figure.titlesize": 4,
-                    "figure.constrained_layout.use": True,
-                    "font.size": 2,
+                    "figure.titlesize": 5,
+                    "font.size": 3,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.2,
                     "lines.marker": 's',
@@ -960,14 +959,14 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.04),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
                     "maxage.fontsize": 2,
-                    "figure.title.yposition": 0.97,
+                    "figure.title.yposition": 0.95,
                     "annotation.marker.size": 1.2,
                     "annotation.edge.width": 0.2,
                     "annotation.line.width": 0.2,
@@ -977,13 +976,14 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 0.5
+                    "era.line.linewidth": 0.5,
+                    "watermark.fontsize": 30
                 }
             }
         elif papersize == Papersize.A10:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 4,
+                    "axes.labelsize": 2,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -991,16 +991,15 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [1.0, 1.5],
-                    "figure.titlesize": 6,
-                    "figure.constrained_layout.use": True,
+                    "figure.titlesize": 4,
                     "font.size": 1,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
-                    "lines.markeredgewidth": 0.5,
+                    "lines.markeredgewidth": 0.01,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 0.001,
+                    "lines.markersize": 0.50,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.05,
                     "text.usetex": True,
@@ -1025,14 +1024,14 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.08),
+                    "xlabel.position": (0.30, 1.08),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.02, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
                     "maxage.fontsize": 2,
-                    "figure.title.yposition": 1.1,
+                    "figure.title.yposition": 0.95,
                     "annotation.marker.size": .001,
                     "annotation.edge.width": 0.1,
                     "annotation.line.width": 0.1,
@@ -1042,13 +1041,14 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": .2
+                    "era.line.linewidth": .2,
+                    "watermark.fontsize": 18
                 }
             }
         elif papersize == Papersize.HalfLetter:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 10,
+                    "axes.labelsize": 8,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -1057,15 +1057,14 @@ class LifegraphParams:
                     "axes.spines.top": False,
                     "figure.figsize": [5.5, 8.5],
                     "figure.titlesize": 20,
-                    "figure.constrained_layout.use": True,
                     "font.size": 10,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
-                    "lines.markeredgewidth": 0.40,
+                    "lines.markeredgewidth": 0.30,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 2.0,
+                    "lines.markersize": 1.5,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.05,
                     "text.usetex": True,
@@ -1090,14 +1089,14 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.45, 1.05),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
                     "maxage.fontsize": 10,
-                    "figure.title.yposition": 0.97,
+                    "figure.title.yposition": 0.95,
                     "annotation.marker.size": 6.0,
                     "annotation.edge.width": 0.8,
                     "annotation.line.width": 1.0,
@@ -1107,13 +1106,14 @@ class LifegraphParams:
                     "annotation.right.offset": 5,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 90
                 }
             }
         elif papersize == Papersize.Letter:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 10,
+                    "axes.labelsize": 8,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -1122,13 +1122,12 @@ class LifegraphParams:
                     "axes.spines.top": False,
                     "figure.figsize": [8.5, 11.0],
                     "figure.titlesize": 20,
-                    "figure.constrained_layout.use": False,
-                    "font.size": 10,
+                    "font.size": 12,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
-                    "lines.markeredgewidth": 0.40,
+                    "lines.markeredgewidth": 0.30,
                     "lines.markerfacecolor": 'none',
                     "lines.markersize": 3.0,
                     "markers.fillstyle": 'none',
@@ -1155,7 +1154,7 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.40, 1.03),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
@@ -1172,13 +1171,14 @@ class LifegraphParams:
                     "annotation.right.offset": 3,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 110
                 }
             }
         elif papersize == Papersize.Legal:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 10,
+                    "axes.labelsize": 8,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -1186,16 +1186,15 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [8.5, 14.0],
-                    "figure.titlesize": 20,
-                    "figure.constrained_layout.use": True,
-                    "font.size": 10,
+                    "figure.titlesize": 24,
+                    "font.size": 12,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
-                    "lines.markeredgewidth": 0.40,
+                    "lines.markeredgewidth": 0.35,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 4.0,
+                    "lines.markersize": 3.0,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.50,
                     "text.usetex": True,
@@ -1220,7 +1219,7 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.40, 1.03),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
@@ -1237,13 +1236,14 @@ class LifegraphParams:
                     "annotation.right.offset": 2,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 110
                 }
             }
         elif papersize == Papersize.JuniorLegal:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 10,
+                    "axes.labelsize": 8,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -1252,15 +1252,14 @@ class LifegraphParams:
                     "axes.spines.top": False,
                     "figure.figsize": [5.0, 8.0],
                     "figure.titlesize": 20,
-                    "figure.constrained_layout.use": True,
                     "font.size": 10,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
-                    "lines.markeredgewidth": 0.40,
+                    "lines.markeredgewidth": 0.35,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 2.0,
+                    "lines.markersize": 1.5,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.50,
                     "text.usetex": True,
@@ -1285,7 +1284,7 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.40, 1.05),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
@@ -1302,13 +1301,14 @@ class LifegraphParams:
                     "annotation.right.offset": 2,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 75
                 }
             }
         elif papersize == Papersize.Ledger:
             d = {
                 "rcParams": {
-                    "axes.labelsize": 10,
+                    "axes.labelsize": 12,
                     "axes.labelcolor": 'blue',
                     "axes.linewidth": 0.0,
                     "axes.spines.bottom": False,
@@ -1316,16 +1316,15 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [11.0, 17.0],
-                    "figure.titlesize": 20,
-                    "figure.constrained_layout.use": True,
-                    "font.size": 10,
+                    "figure.titlesize": 24,
+                    "font.size": 18,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
                     "lines.marker": 's',
                     "lines.markeredgecolor": 'black',
                     "lines.markeredgewidth": 0.40,
                     "lines.markerfacecolor": 'none',
-                    "lines.markersize": 5.0,
+                    "lines.markersize": 4.0,
                     "markers.fillstyle": 'none',
                     "savefig.pad_inches": 0.50,
                     "text.usetex": True,
@@ -1350,14 +1349,14 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.40, 1.03),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
-                    "maxage.fontsize": 10,
-                    "figure.title.yposition": 0.99,
+                    "maxage.fontsize": 16,
+                    "figure.title.yposition": 0.95,
                     "annotation.marker.size": 10.0,
                     "annotation.edge.width": 0.8,
                     "annotation.line.width": 1.0,
@@ -1367,7 +1366,8 @@ class LifegraphParams:
                     "annotation.right.offset": 2,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 110
                 }
             }
         elif papersize == Papersize.Tabloid:
@@ -1381,8 +1381,7 @@ class LifegraphParams:
                     "axes.spines.right": False,
                     "axes.spines.top": False,
                     "figure.figsize": [17.0, 11.0],
-                    "figure.titlesize": 20,
-                    "figure.constrained_layout.use": False,
+                    "figure.titlesize": 22,
                     "font.size": 10,
                     "lines.linestyle": 'none',
                     "lines.linewidth": 0.5,
@@ -1415,24 +1414,25 @@ class LifegraphParams:
                     "ytick.right": False,
                 },
                 "otherParams": {
-                    "xlabel.position": (0.40, 1.03),
+                    "xlabel.position": (0.25, 1.05),
                     "xlabel.color": None,  # defaults to "axes.labelcolor"
                     "xlabel.fontsize": None,  # defaults to "axes.labelsize"
                     "ylabel.position": (-0.03, 0.90),
                     "ylabel.color": None,  # defaults to "axes.labelcolor"
                     "ylabel.fontsize": None,  # defaults to "axes.labelsize"
-                    "maxage.fontsize": 18,
-                    "figure.title.yposition": 0.99,
+                    "maxage.fontsize": 16,
+                    "figure.title.yposition": 0.97,
                     "annotation.marker.size": 10.0,
                     "annotation.edge.width": 0.8,
                     "annotation.line.width": 1.0,
                     "annotation.shrinkA": 0,
                     #"annotation.shrinkB": 0, this is calculated, see the help for __draw_annotations
-                    "annotation.left.offset": 10,
-                    "annotation.right.offset": 10,
+                    "annotation.left.offset": 6,
+                    "annotation.right.offset": 6,
                     "era.span.linestyle": "-",
                     "era.span.markersize": 0,
-                    "era.line.linewidth": 1
+                    "era.line.linewidth": 1,
+                    "watermark.fontsize": 130
                 }
             }
         else:
@@ -1728,7 +1728,7 @@ class Lifegraph:
         plt.rcParams.update(self.settings.rcParams)
 
         self.fig = plt.figure()
-        self.ax = self.fig.add_subplot()
+        self.ax = self.fig.add_axes([.25, .10, .5, .8])
 
         xs = np.arange(1, self.xmax+1)
         ys = [np.arange(0, self.ymax) for i in range(self.xmax)]
@@ -1882,7 +1882,7 @@ class Lifegraph:
         """Internal, draw the watermakr"""
         if self.watermark_text is not None:
             self.fig.text(0.5, 0.5, self.watermark_text,
-                          fontsize=100, color='gray',
+                          fontsize=self.settings.otherParams["watermark.fontsize"], color='gray',
                           ha='center', va='center', alpha=0.3, rotation=65, transform=self.ax.transAxes)
 
     def __draw_title(self):
