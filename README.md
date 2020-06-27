@@ -58,3 +58,7 @@ g.save("grid.png")
 ```
 
 ![A simple grid][grid_with_watermark]
+
+# Contributing and Code of Conduct
+[Read our contributing guidelines](docs/CONTRIBUTING)
+[Read our code of conduct](docs/CODE_OF_CONDUCT.md)
