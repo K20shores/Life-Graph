@@ -26,6 +26,6 @@ def main():
 
     g.show_max_age_label()
 
-    g.save("examples/images/alife.png")
+    g.save("images/alife.png")
 
 main()

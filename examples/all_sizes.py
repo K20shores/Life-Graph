@@ -23,9 +23,9 @@ if __name__ == '__main__':
 
         g.add_title("Our Life, Together")
 
-        g.add_image("examples/marriage-2260602_1920.jpg", alpha=0.3)
+        g.add_image("marriage-2260602_1920.jpg", alpha=0.3)
 
         g.show_max_age_label()
 
-        g.save(f"examples/images/lifegraph_{sz.name}.png")
+        g.save(f"images/lifegraph_{sz.name}.png")
         g.close()
