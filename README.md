@@ -61,4 +61,5 @@ g.save("grid.png")
 
 # Contributing and Code of Conduct
 [Read our contributing guidelines](docs/CONTRIBUTING)
+
 [Read our code of conduct](docs/CODE_OF_CONDUCT.md)
