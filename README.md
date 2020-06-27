@@ -1,5 +1,7 @@
-# Life graph
+<!-- Images -->
+[grid]: https://github.com/K20shores/Life-Graph/blob/master/examples/images/grid.png "A Simple Grid"
 
+# Life graph
 Inspired by [this post](https://waitbutwhy.com/2014/05/life-weeks.html), I decided I wanted to make my own graph of my life.
 In the comments on that post, there are many other graphs available, but most of them add lots of different things that I did
 not care for. They looked extremely nice, but not nearly as simple as the box of squares originally showed in the post. The simplicity
@@ -15,6 +17,5 @@ birthday = date(1990, 11, 1)
 g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=90)
 g.save("examples/images/grid.png")
 ```
-![A simple grid][grid]
 
-[grid]: https://github.com/K20shores/Life-Graph/blob/master/examples/images/grid.png "A Simple Grid"
+![A simple grid](grid)
