@@ -1,5 +1,5 @@
 <!-- Images -->
-[grid]: https://github.com/K20shores/Life-Graph/blob/master/examples/images/grid.png "A Simple Grid"
+[grid]: examples/images/grid.png "A Simple Grid"
 
 # Life graph
 Inspired by [this post](https://waitbutwhy.com/2014/05/life-weeks.html), I decided I wanted to make my own graph of my life.
