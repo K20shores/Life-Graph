@@ -3,6 +3,7 @@
 [grid]: examples/images/grid.png "A Simple Grid"
 [grid_with_title]: examples/images/grid_with_title.png "With a Title"
 [grid_with_watermark]: examples/images/grid_with_watermark.png "With a Watermark"
+[grid_maxage]: examples/images/grid_maxage.png "With a Watermark"
 
 # Life Graph
 Inspired by [this post](https://waitbutwhy.com/2014/05/life-weeks.html), I decided I wanted to make my own graph of my life.
@@ -43,7 +44,7 @@ g.add_title("Time is Not Equal to Money")
 g.save("grid.png")
 ```
 
-![A simple grid][grid_with_title]
+![Adding a title][grid_with_title]
 
 # Add a Watermark
 ```
@@ -57,7 +58,21 @@ g.add_watermark("Your Life")
 g.save("grid.png")
 ```
 
-![A simple grid][grid_with_watermark]
+![Adding a watermark][grid_with_watermark]
+
+# Display and Change the Max Age
+```
+from lifegraph.lifegraph import Lifegraph, Papersize
+from datetime import date
+
+birthday = date(1990, 11, 1)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
+g.add_title("Time is Not Equal to Money")
+g.show_max_age_label()
+g.save("images/grid_maxage.png")
+```
+
+![Changing and displaying the max age][grid_maxage]
 
 # Contributing and Code of Conduct
 [Read our contributing guidelines](docs/CONTRIBUTING)
