@@ -5,12 +5,16 @@ In the comments on that post, there are many other graphs available, but most of
 not care for. They looked extremely nice, but not nearly as simple as the box of squares originally showed in the post. The simplicity
 of seeing my life on a tiny grid really hit me. I wanted to recreate that.
 
-The folks at [waitbutwhy.com](https://waitbutwhy.com) own the idea behind this work. They also gave me permission to produce and realease
+The folks at [waitbutwhy.com](https://waitbutwhy.com) own the idea behind this work. They gave me permission to produce and realease
 this code for free use by everyone else.
 
-# Setup environment
-`python3 -m venv .`
-`pip install -r requirements.txt`
+# A Simple Grid
+To make a grid of squares, this is all you need.
+```
+birthday = date(1990, 11, 1)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=90)
+g.save("examples/images/grid.png")
+```
+![A simple grid][grid]
 
-# Run
-Modify `make_graph.py` and then run `python3 make_graph.py`
+[grid]: https://github.com/K20shores/Life-Graph/blob/master/examples/images/grid.png "A Simple Grid"
