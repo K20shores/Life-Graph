@@ -1,5 +1,7 @@
 <!-- Images -->
 [grid]: examples/images/grid.png "A Simple Grid"
+[grid_with_title]: examples/images/grid_with_title.png "With a Title"
+[grid_with_watermark]: examples/images/grid_with_watermark.png "With a Watermark"
 
 # Life graph
 Inspired by [this post](https://waitbutwhy.com/2014/05/life-weeks.html), I decided I wanted to make my own graph of my life.
@@ -12,10 +14,43 @@ this code for free use by everyone else.
 
 # A Simple Grid
 To make a grid of squares, this is all you need.
+By default, the axes instance is constrained to a smaller portion of the page to make
+room for annotations on the edge of the graph. The axes_rect argument ensures that the graph
+takes up more room.
 ```
+from lifegraph.lifegraph import Lifegraph, Papersize
+from datetime import date
+
 birthday = date(1990, 11, 1)
-g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=90)
-g.save("examples/images/grid.png")
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=90, axes_rect=[.1, .1, .8, .8])
+g.save("grid.png")
 ```
 
 ![A simple grid][grid]
+
+# Add a Title
+```
+from lifegraph.lifegraph import Lifegraph, Papersize
+from datetime import date
+
+birthday = date(1990, 11, 1)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=90)
+g.add_title("Time is Not Equal to Money")
+g.save("grid.png")
+```
+
+![A simple grid][grid_with_title]
+
+# Add a Watermark
+```
+from lifegraph.lifegraph import Lifegraph, Papersize
+from datetime import date
+
+birthday = date(1990, 11, 1)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=90)
+g.add_title("Time is Not Equal to Money")
+g.add_watermark("Your Life")
+g.save("grid.png")
+```
+
+![A simple grid][grid_with_watermark]

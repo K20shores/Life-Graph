@@ -1,5 +1,5 @@
-from lifegraph.lifegraph import Lifegraph, Papersize, random_color, Point, Side
-from datetime import date, datetime, timedelta
+from lifegraph.lifegraph import Lifegraph, Papersize
+from datetime import date
 
 if __name__ == '__main__':
     birthday = date(1990, 11, 1)
