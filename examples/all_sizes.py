@@ -6,7 +6,7 @@ if __name__ == '__main__':
 
     for sz in Papersize:
         print(f"{sz}")
-        g = Lifegraph(birthday, dpi=600, size=sz, max_age=90, label_space_epsilon=1)
+        g = Lifegraph(birthday, dpi=600, size=sz, label_space_epsilon=1)
 
         g.add_life_event('Married', date(2010, 2, 14), '#DC143C')
         g.add_life_event('Five Years\nTogether', date(2015, 2, 14), '#DC143C')

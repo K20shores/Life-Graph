@@ -27,7 +27,7 @@ from lifegraph.lifegraph import Lifegraph, Papersize
 from datetime import date
 
 birthday = date(1990, 11, 1)
-g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=90, axes_rect=[.1, .1, .8, .8])
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, axes_rect=[.1, .1, .8, .8])
 g.save("grid.png")
 ```
 
@@ -39,7 +39,7 @@ from lifegraph.lifegraph import Lifegraph, Papersize
 from datetime import date
 
 birthday = date(1990, 11, 1)
-g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=90)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4)
 g.add_title("Time is Not Equal to Money")
 g.save("grid.png")
 ```
@@ -52,7 +52,7 @@ from lifegraph.lifegraph import Lifegraph, Papersize
 from datetime import date
 
 birthday = date(1990, 11, 1)
-g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=90)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4)
 g.add_title("Time is Not Equal to Money")
 g.add_watermark("Your Life")
 g.save("grid.png")

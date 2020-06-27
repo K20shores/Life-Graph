@@ -3,7 +3,7 @@ from datetime import date, datetime
 
 def main():
     birthday = date(1995, 11, 20)
-    g = Lifegraph(birthday, dpi=300, size=Papersize.A2, max_age=90, label_space_epsilon=1)
+    g = Lifegraph(birthday, dpi=300, size=Papersize.Letter, label_space_epsilon=1)
 
     g.add_life_event('Won an award', date(2013, 11, 20), '#014421')
     g.add_life_event('Hiked the Rocky Mountains', date(2014, 2, 14), '#DC143C', hint=(25, -3))
