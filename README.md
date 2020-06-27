@@ -18,4 +18,4 @@ g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=90)
 g.save("examples/images/grid.png")
 ```
 
-![A simple grid](grid)
+![A simple grid][grid]
