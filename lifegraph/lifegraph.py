@@ -571,7 +571,7 @@ class Lifegraph:
     def show(self):
         """Show the grpah"""
         self.__draw()
-        self.ax.show()
+        plt.show()
 
     def close(self):
         """Close the graph"""
