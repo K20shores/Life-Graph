@@ -3,8 +3,10 @@
 [grid]: examples/images/grid.png "A Simple Grid"
 [grid_with_title]: examples/images/grid_with_title.png "With a Title"
 [grid_with_watermark]: examples/images/grid_with_watermark.png "With a Watermark"
-[grid_maxage]: examples/images/grid_maxage.png "With a Watermark"
-[grid_life_event]: examples/images/grid_life_event.png "With a Watermark"
+[grid_maxage]: examples/images/grid_maxage.png "Adding the max age"
+[grid_life_event]: examples/images/grid_life_event.png "A life event"
+[grid_era]: examples/images/grid_era.png "An era span"
+[grid_era_span]: examples/images/grid_era_span.png "An era span"
 
 # Life Graph
 Inspired by [this post](https://waitbutwhy.com/2014/05/life-weeks.html), I decided I wanted to make my own graph of my life.
@@ -105,6 +107,52 @@ g.save("images/grid_life_event.png")
 ```
 
 ![Adding life events][grid_life_event]
+
+# Adding an Era
+You can color parts of your life that marked an era.
+```
+from lifegraph.lifegraph import Lifegraph, Papersize
+from datetime import date
+
+birthday = date(1990, 11, 1)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
+
+g.add_title("Time is Not Equal to Money")
+g.show_max_age_label()
+
+# random color will be used
+g.add_era('That one thing\nI did as a kid', date(2000, 3, 4), date(2005, 8, 22))
+
+# you can also choose the color
+g.add_era('Running for city\ncouncil', date(2019, 12, 10), date(2020, 11, 5), color="#4423fe")
+
+g.save("images/grid_era_span.png")
+```
+
+![Adding eras][grid_era]
+
+# Adding an Era Span
+Or you can use this dumbbell shape to denote eras
+```
+from lifegraph.lifegraph import Lifegraph, Papersize
+from datetime import date
+
+birthday = date(1990, 11, 1)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
+
+g.add_title("Time is Not Equal to Money")
+g.show_max_age_label()
+
+# random color will be used
+g.add_era_span('That one thing\nI did as a kid', date(2000, 3, 4), date(2005, 8, 22))
+
+# you can also choose the color
+g.add_era_span('Running for city\ncouncil', date(2019, 12, 10), date(2020, 11, 5), color="#4423fe")
+
+g.save("images/grid_era_span.png")
+```
+
+![Adding era spans][grid_era_span]
 
 # Contributing and Code of Conduct
 [Read our contributing guidelines](docs/CONTRIBUTING)

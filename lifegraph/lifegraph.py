@@ -487,15 +487,15 @@ class Lifegraph:
                        event_point=label_point, put_circle_around_point=False)
         self.annotations.append(a)
 
-    def add_era_span(self, text, start_date, end_date, color='g', hint=None, side=None, color_start_and_end_markers=False):
+    def add_era_span(self, text, start_date, end_date, color=None, hint=None, side=None, color_start_and_end_markers=False):
         """Add a dumbbell around a section of your life
 
         :param text: The text labeling the span
         :param start_date: When the era started
         :param end_date: When the era ended
-        :param color: Default value = 'g') A matplotlib color
-        :param hint: Default value = None) Mutually exclusive with side, a Point indicating where the label should be placed. This position will be honored if possible
-        :param side: Default value = None) Mutually exclusive with hint. If Side.LEFT, the label will be on the left of the graph. Is Side.RIGHT, the label will be placed on the ride side of the graph
+        :param color: (Default value = random_color()) A matplotlib color
+        :param hint: (Default value = None) Mutually exclusive with side, a Point indicating where the label should be placed. This position will be honored if possible
+        :param side: (Default value = None) Mutually exclusive with hint. If Side.LEFT, the label will be on the left of the graph. Is Side.RIGHT, the label will be placed on the ride side of the graph
         :param color_start_and_end_markers: Default value = False) Colors the sqaures indicating the start and end date on the graph the same color as the text if True. The sqaures are the default color of the graph squares otherwise
 
         """
@@ -505,6 +505,9 @@ class Lifegraph:
         if (end_date < self.birthdate or end_date > (relativedelta(years=self.ymax) + self.birthdate)):
             raise ValueError(
                 f"The event date must be a valid datetime.date object that is at least as recent as the birthdate and no larger than {self.ymax}")
+
+        if color is None:
+            color = random_color()
 
         start_position = self.__to_date_position(start_date)
         end_position = self.__to_date_position(end_date)
