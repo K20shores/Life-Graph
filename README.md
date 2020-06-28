@@ -5,8 +5,9 @@
 [grid_with_watermark]: examples/images/grid_with_watermark.png "With a Watermark"
 [grid_maxage]: examples/images/grid_maxage.png "Adding the max age"
 [grid_life_event]: examples/images/grid_life_event.png "A life event"
-[grid_era]: examples/images/grid_era.png "An era span"
+[grid_era]: examples/images/grid_era.png "An era"
 [grid_era_span]: examples/images/grid_era_span.png "An era span"
+[grid_add_image]: examples/images/grid_add_image.png "Add an image"
 
 # Life Graph
 Inspired by [this post](https://waitbutwhy.com/2014/05/life-weeks.html), I decided I wanted to make my own graph of my life.
@@ -153,6 +154,24 @@ g.save("images/grid_era_span.png")
 ```
 
 ![Adding era spans][grid_era_span]
+
+# Add an image
+You can add images to the axes instance.
+```
+from lifegraph.lifegraph import Lifegraph, Papersize
+from datetime import date
+
+birthday = date(1990, 11, 1)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
+
+g.add_title("Time is Not Equal to Money")
+g.show_max_age_label()
+
+g.add_image("couple.jpg", alpha=0.5)
+
+g.save("images/grid_add_image.png")
+```
+![Adding an image][grid_add_image]
 
 # Contributing and Code of Conduct
 [Read our contributing guidelines](docs/CONTRIBUTING)

@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
         g.add_title("Our Life, Together")
 
-        g.add_image("marriage-2260602_1920.jpg", alpha=0.3)
+        g.add_image("couple.jpg", alpha=0.3)
 
         g.show_max_age_label()
 
