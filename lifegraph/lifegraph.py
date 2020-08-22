@@ -421,11 +421,11 @@ class Lifegraph:
         """Label an event in your life
 
         :param text: The text the should appear for the life event
-        :param date: Default value = None) When the event occurred
-        :param color: Default value = None) A color useable by any matplotlib object
-        :param hint: Default value = None) Mutually exclusive with side. Not required. If the default placement is not desired. A Point may be provided to help the graph decide where to place the label of the event.
-        :param side: Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
-        :param color_square: Default value = True) Colors the sqaure on the graph the same color as the text if True. The sqaure is the default color of the graph squares otherwise
+        :param date: (Default value = None) When the event occurred
+        :param color: (Default value = None) A color useable by any matplotlib object
+        :param hint: (Default value = None) Mutually exclusive with side. Not required. If the default placement is not desired. A Point may be provided to help the graph decide where to place the label of the event.
+        :param side: (Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
+        :param color_square: (Default value = True) Colors the sqaure on the graph the same color as the text if True. The sqaure is the default color of the graph squares otherwise
 
         """
         if (date < self.birthdate or date > (relativedelta(years=self.ymax) + self.birthdate)):
