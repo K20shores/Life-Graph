@@ -1,7 +1,7 @@
 from lifegraph.lifegraph import Lifegraph, Papersize, random_color, Point, Side
 from datetime import date, datetime
 
-def main():
+if __name__ == '__main__':
     birthday = date(1995, 11, 20)
     g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100, label_space_epsilon=1)
 
@@ -9,7 +9,6 @@ def main():
     g.settings.otherParams["annotation.right.offset"] = 3
 
     # same day that I was accepted onto performance team :`)
-    g.add_life_event('thing 1', date(2017, 9, 11), '#990000')
     g.add_life_event('thing 2', date(2019, 1, 7), '#00008B')
     g.add_life_event('thing 3', date(2018, 12, 8), '#87CEFA')
     g.add_life_event('thing 4', date(2013, 11, 20), '#014421')
@@ -32,5 +31,3 @@ def main():
     g.show_max_age_label()
 
     g.save("images/hint_collision.png")
-
-main()
