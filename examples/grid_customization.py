@@ -9,5 +9,6 @@ if __name__ == '__main__':
     g.show_max_age_label()
 
     g.settings.rcParams["lines.marker"] = 'v'
+    g.settings.rcParams["lines.markersize"] = 2.0
 
     g.save("images/grid_customization.png")

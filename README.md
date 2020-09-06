@@ -8,6 +8,7 @@
 [grid_era]: examples/images/grid_era.png "An era"
 [grid_era_span]: examples/images/grid_era_span.png "An era span"
 [grid_add_image]: examples/images/grid_add_image.png "Add an image"
+[grid_customization]: examples/images/grid_customization.png "Customize the grid"
 
 # Life Graph
 Inspired by [this post](https://waitbutwhy.com/2014/05/life-weeks.html), I decided I wanted to make my own graph of my life.
@@ -172,6 +173,32 @@ g.add_image("couple.jpg", alpha=0.5)
 g.save("images/grid_add_image.png")
 ```
 ![Adding an image][grid_add_image]
+
+# Customize the Grid
+The grid properties for each papersize is controlled by the matplotlib rc paramters. The paramters
+for each papersize can be found in [the configuration file](lifegraph/configuration.py).
+```
+from lifegraph.lifegraph import Lifegraph, Papersize
+from datetime import date
+
+birthday = date(1990, 11, 1)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
+
+g.add_title("Time is Not Equal to Money")
+g.show_max_age_label()
+
+g.settings.rcParams["lines.marker"] = 'v'
+g.settings.rcParams["lines.markersize"] = 2.0
+
+g.save("images/grid_customization.png")
+```
+
+There are a number of other rc parameters defined for this package. There are really
+too many to provide an example of each. Please see the availabel 
+configurations for a better idea of what can be customized. Some of the 
+customizable parameters can be set with the lifegraph. For example, `g.format_x_axis(positionx=0, positiony=0)` is equivalent to `g.settings.otherParams['xlabel.position'] = (0, 0)` (both coordinates are in axes coordinates) and would move the 'Week of the year ->' text to the bottom left of the graph.
+
+![Customizing the grid][grid_customization]
 
 # Contributing and Code of Conduct
 [Read our contributing guidelines](docs/CONTRIBUTING)
