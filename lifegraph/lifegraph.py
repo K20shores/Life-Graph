@@ -854,7 +854,7 @@ class Lifegraph:
 
         year = delta.days // 365
         # Assume the start of the year for each year of your life is your birthdate
-        # something that happens within on or up to (not including) 7 days after the start
+        # something that happens within or up to (not including) 7 days after the start
         # of the year happens in the first week of your life that year
         # Using this logic, your birthday will always happen on week 1 of each year
         start_of_year = self.birthdate + relativedelta(years=year)
