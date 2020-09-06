@@ -10,7 +10,20 @@
 [grid_add_image]: examples/images/grid_add_image.png "Add an image"
 [grid_customization]: examples/images/grid_customization.png "Customize the grid"
 
-# Life Graph
+# Table of Contents
+1. [Life Graph Inspriation](#life-graph-inspiration)
+1. [A Life Graph Example](#a-life-graph-example)
+1. [A Simple Grid](#a-simple-grid)
+1. [Add a Title](#add-a-title)
+1. [Add a Watermark](#add-a-watermark)
+1. [Display and Change the Max Age](#display-and-change-the-max-age)
+1. [Adding a Life event](#adding-a-life-event)
+1. [Adding an Era](#adding-an-era)
+1. [Adding an Era Span](#adding-an-era-span)
+1. [Add an Image](#add-an-image)
+1. [Customize the Grid](#customize-the-grid)
+
+# Life Graph Inspiration
 Inspired by [this post](https://waitbutwhy.com/2014/05/life-weeks.html), I decided I wanted to make my own graph of my life.
 In the comments on that post, there are many other graphs available, but most of them add lots of different things that I did
 not care for. They looked extremely nice, but not nearly as simple as the box of squares originally showed in the post. The simplicity
@@ -19,7 +32,7 @@ of seeing my life on a tiny grid really hit me. I wanted to recreate that.
 The folks at [waitbutwhy.com](https://waitbutwhy.com) own the idea behind this work. They gave me permission to produce and realease
 this code for free use by everyone else.
 
-# A Life Graph
+# A Life Graph Example
 ![A Life Graph][alife]
 
 # A Simple Grid
@@ -79,7 +92,7 @@ g.save("images/grid_maxage.png")
 
 ![Changing and displaying the max age][grid_maxage]
 
-# Adding a life event
+# Adding a Life Event
 You can add events of your life. The graph is initialized from your birthday and where
 the events are placed on the graph is calculated from your birthdate and the day that 
 the event happened. Notice the different ways that you can set the color and that
@@ -156,7 +169,7 @@ g.save("images/grid_era_span.png")
 
 ![Adding era spans][grid_era_span]
 
-# Add an image
+# Add an Image
 You can add images to the axes instance.
 ```
 from lifegraph.lifegraph import Lifegraph, Papersize
