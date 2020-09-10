@@ -9,6 +9,7 @@
 [grid_era_span]: examples/images/grid_era_span.png "An era span"
 [grid_add_image]: examples/images/grid_add_image.png "Add an image"
 [grid_customization]: examples/images/grid_customization.png "Customize the grid"
+[annotation_placement]: examples/images/placement.png "Annotation placement"
 
 # Table of Contents
 1. [Life Graph Inspriation](#life-graph-inspiration)
@@ -22,6 +23,7 @@
 1. [Adding an Era Span](#adding-an-era-span)
 1. [Add an Image](#add-an-image)
 1. [Customize the Grid](#customize-the-grid)
+1. [Annotation Placement](#annotation-placement)
 
 # Life Graph Inspiration
 Inspired by [this post](https://waitbutwhy.com/2014/05/life-weeks.html), I decided I wanted to make my own graph of my life.
@@ -212,6 +214,47 @@ configurations for a better idea of what can be customized. Some of the
 customizable parameters can be set with the lifegraph. For example, `g.format_x_axis(positionx=0, positiony=0)` is equivalent to `g.settings.otherParams['xlabel.position'] = (0, 0)` (both coordinates are in axes coordinates) and would move the 'Week of the year ->' text to the bottom left of the graph.
 
 ![Customizing the grid][grid_customization]
+
+# Annotation Placement
+
+By default, the graph will place annotations from top to bottom. The graph lays out annotations
+so that they do not overlap. If annotations do overlap, this is a bug. Please file a bug report. Annotations
+for events in the first 26 weeks of a year in your life will be on the right side, everything else on the left.
+
+However, you can control the placement if you wish through the use of the `hint` and `side` keyword arguments.
+
+```
+from lifegraph.lifegraph import Lifegraph, Papersize, Side
+from datetime import date
+
+birthday = date(1990, 11, 1)
+g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
+
+g.add_title("Time is Not Equal to Money")
+g.show_max_age_label()
+
+# the default placement
+g.add_life_event('My first paycheck', date(2006, 1, 23), color='r')
+
+# a hint, in data coordinates
+g.add_life_event('My first paycheck', date(2006, 1, 23), color='r', hint=(10, -10))
+
+# a side
+g.add_life_event('My first paycheck', date(2006, 1, 23), color='r', side=Side.RIGHT)
+
+# the default placement
+g.add_era_span('Green thing', start_date=date(2010, 2, 1), end_date=date(2011, 8, 1), color='g')
+
+# a hint, in data coordinates
+g.add_era_span('Red thing', start_date=date(2012, 2, 1), end_date=date(2013, 8, 1), color='r', hint=(52, 105))
+
+# a side
+g.add_era_span('Blue thing', start_date=date(2014, 2, 1), end_date=date(2015, 8, 1), color='b', side=Side.LEFT)
+
+g.save("images/placement.png")
+```
+
+![Annotation Placement][annotation_placement]
 
 # Contributing and Code of Conduct
 [Read our contributing guidelines](docs/CONTRIBUTING)
