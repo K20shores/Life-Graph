@@ -307,15 +307,32 @@ class EraSpan(Era):
 class Lifegraph:
     """This class will represent your life as a graph of boxes"""
 
+    # some recommended settings
     rcParams = {
         'figure.dpi' : 300,
-        'figure.figsize' : [11.7, 16.5],
         'lines.markeredgecolor' : 'black',
-        'lines.markeredgewidth' : 0.5,
-        'lines.markersize' : 5,
+        'lines.markeredgewidth' : 0.25,
+        'lines.markersize' : 1,
         'lines.linestyle' : 'none',
         'lines.marker' : 's',
         'markers.fillstyle' : 'none',
+        'xtick.major.width' : 0.25,
+        'ytick.major.width' : 0.25,
+    }
+
+    # settings specific to lifegraph
+    default_settings = {
+        "maxage.fontsize": 20,
+        "annotation.marker.size": 2.0,
+        "annotation.edge.width": 0.5,
+        "annotation.line.width": 0.5,
+        "annotation.shrinkA": 0,
+        "annotation.left.offset": 20,
+        "annotation.right.offset": 5,
+        "era.span.linestyle": "-",
+        "era.span.markersize": 0,
+        "era.line.linewidth": 1,
+        "watermark.fontsize": 60
     }
 
     def __init__(self, birthdate, label_space_epsilon=0.2, max_age=90, axes_rect = [.25, .1, .5, .8], rcParams = None, other_params = None):
@@ -369,25 +386,7 @@ class Lifegraph:
         self.eras = []
         self.era_spans = []
 
-        self.settings = {
-            "xlabel.position": (0.20, 1.05),
-            "xlabel.color": None,  # defaults to "axes.labelcolor"
-            "xlabel.fontsize": None,  # defaults to "axes.labelsize"
-            "ylabel.position": (-0.03, 0.95),
-            "ylabel.color": None,  # defaults to "axes.labelcolor"
-            "ylabel.fontsize": None,  # defaults to "axes.labelsize"
-            "maxage.fontsize": 20,
-            "annotation.marker.size": 2.0,
-            "annotation.edge.width": 0.8,
-            "annotation.line.width": 1.0,
-            "annotation.shrinkA": 0,
-            "annotation.left.offset": 6,
-            "annotation.right.offset": 5,
-            "era.span.linestyle": "-",
-            "era.span.markersize": 0,
-            "era.line.linewidth": 1,
-            "watermark.fontsize": 120
-        }
+        self.settings = Lifegraph.default_settings 
         if other_params is not None:
             self.settings.update(other_params)
 
@@ -547,6 +546,10 @@ class Lifegraph:
         self.image_name = image_name
         self.image_alpha = alpha
 
+    def draw(self):
+        """Draw the grpah"""
+        self.__draw()
+
     def show(self):
         """Show the grpah"""
         self.__draw()
@@ -587,12 +590,12 @@ class Lifegraph:
         self.__draw_yaxis()
 
         self.__draw_annotations()
-        # self.__draw_eras()
-        # self.__draw_era_spans()
-        # self.__draw_watermark()
-        # self.__draw_title()
-        # self.__draw_image()
-        # self.__draw_max_age()
+        self.__draw_eras()
+        self.__draw_era_spans()
+        self.__draw_watermark()
+        self.__draw_title()
+        self.__draw_image()
+        self.__draw_max_age()
 
         self.ax.set_aspect('equal', share=True)
 
@@ -722,7 +725,8 @@ class Lifegraph:
     def __draw_title(self):
         """Internal, draw the title"""
         if self.title is not None:
-            self.fig.suptitle( self.title )
+            title = self.fig.suptitle( self.title )
+            self._last_title = title.get_text()
 
     def __draw_image(self):
         """Internal, draw the image"""
