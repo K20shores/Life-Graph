@@ -54,97 +54,34 @@ the events are placed on the graph is calculated from your birthdate and the day
 the event happened. Notice the different ways that you can set the color and that
 you can specify which side you'd like to place the text if you don't like the default.
 
-
+https://github.com/K20shores/Life-Graph/blob/9bbd939bf5a14ff5b59977b4304801e23196c578/test/tests.py#L68-L73
 ![Adding life events][grid_life_event]
 
 # Adding an Era
 You can color parts of your life that marked an era.
-```
-from lifegraph.lifegraph import Lifegraph, Papersize
-from datetime import date
-
-birthday = date(1990, 11, 1)
-g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
-
-g.add_title("Time is Not Equal to Money")
-g.show_max_age_label()
-
-# random color will be used
-g.add_era('That one thing\nI did as a kid', date(2000, 3, 4), date(2005, 8, 22))
-
-# you can also choose the color
-g.add_era('Running for city\ncouncil', date(2019, 12, 10), date(2020, 11, 5), color="#4423fe")
-
-g.save("images/grid_era_span.png")
-```
-
+https://github.com/K20shores/Life-Graph/blob/9bbd939bf5a14ff5b59977b4304801e23196c578/test/tests.py#L52-L56
 ![Adding eras][grid_era]
 
 # Adding an Era Span
 Or you can use this dumbbell shape to denote eras
-```
-from lifegraph.lifegraph import Lifegraph, Papersize
-from datetime import date
-
-birthday = date(1990, 11, 1)
-g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
-
-g.add_title("Time is Not Equal to Money")
-g.show_max_age_label()
-
-# random color will be used
-g.add_era_span('That one thing\nI did as a kid', date(2000, 3, 4), date(2005, 8, 22))
-
-# you can also choose the color
-g.add_era_span('Running for city\ncouncil', date(2019, 12, 10), date(2020, 11, 5), color="#4423fe")
-
-g.save("images/grid_era_span.png")
-```
-
+https://github.com/K20shores/Life-Graph/blob/9bbd939bf5a14ff5b59977b4304801e23196c578/test/tests.py#L60-L64
 ![Adding era spans][grid_era_span]
 
 # Add an Image
 You can add images to the axes instance.
-```
-from lifegraph.lifegraph import Lifegraph, Papersize
-from datetime import date
-
-birthday = date(1990, 11, 1)
-g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
-
-g.add_title("Time is Not Equal to Money")
-g.show_max_age_label()
-
-g.add_image("couple.jpg", alpha=0.5)
-
-g.save("images/grid_add_image.png")
-```
+https://github.com/K20shores/Life-Graph/blob/9bbd939bf5a14ff5b59977b4304801e23196c578/test/tests.py#L138-L141
 ![Adding an image][grid_add_image]
 
 # Customize the Grid
 The grid properties for each papersize is controlled by the matplotlib rc paramters. The paramters
 for each papersize can be found in [the configuration file](lifegraph/configuration.py).
-```
-from lifegraph.lifegraph import Lifegraph, Papersize
-from datetime import date
-
-birthday = date(1990, 11, 1)
-g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
-
-g.add_title("Time is Not Equal to Money")
-g.show_max_age_label()
-
-g.settings.rcParams["lines.marker"] = 'v'
-g.settings.rcParams["lines.markersize"] = 2.0
-
-g.save("images/grid_customization.png")
-```
 
 There are a number of other rc parameters defined for this package. There are really
-too many to provide an example of each. Please see the availabel 
+too many to provide an example of each. Please see the available
 configurations for a better idea of what can be customized. Some of the 
-customizable parameters can be set with the lifegraph. For example, `g.format_x_axis(positionx=0, positiony=0)` is equivalent to `g.settings.otherParams['xlabel.position'] = (0, 0)` (both coordinates are in axes coordinates) and would move the 'Week of the year ->' text to the bottom left of the graph.
+customizable parameters can be set with the lifegraph. 
 
+https://github.com/K20shores/Life-Graph/blob/9bbd939bf5a14ff5b59977b4304801e23196c578/test/tests.py#L77-L83
 ![Customizing the grid][grid_customization]
 
 # Annotation Placement
@@ -155,37 +92,7 @@ for events in the first 26 weeks of a year in your life will be on the right sid
 
 However, you can control the placement if you wish through the use of the `hint` and `side` keyword arguments.
 
-```
-from lifegraph.lifegraph import Lifegraph, Papersize, Side
-from datetime import date
-
-birthday = date(1990, 11, 1)
-g = Lifegraph(birthday, dpi=300, size=Papersize.A4, max_age=100)
-
-g.add_title("Time is Not Equal to Money")
-g.show_max_age_label()
-
-# the default placement
-g.add_life_event('My first paycheck', date(2006, 1, 23), color='r')
-
-# a hint, in data coordinates
-g.add_life_event('My first paycheck', date(2006, 1, 23), color='r', hint=(10, -10))
-
-# a side
-g.add_life_event('My first paycheck', date(2006, 1, 23), color='r', side=Side.RIGHT)
-
-# the default placement
-g.add_era_span('Green thing', start_date=date(2010, 2, 1), end_date=date(2011, 8, 1), color='g')
-
-# a hint, in data coordinates
-g.add_era_span('Red thing', start_date=date(2012, 2, 1), end_date=date(2013, 8, 1), color='r', hint=(52, 105))
-
-# a side
-g.add_era_span('Blue thing', start_date=date(2014, 2, 1), end_date=date(2015, 8, 1), color='b', side=Side.LEFT)
-
-g.save("images/placement.png")
-```
-
+https://github.com/K20shores/Life-Graph/blob/9bbd939bf5a14ff5b59977b4304801e23196c578/test/tests.py#L113-L134
 ![Annotation Placement][annotation_placement]
 
 # Contributing and Code of Conduct
