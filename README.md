@@ -1,3 +1,6 @@
+# Life Graph
+[![CI Status](https://github.com/k20shores/Life-Graph/actions/workflows/tests.yml/badge.svg)](https://github.com/k20shores/Life-Graph/actions/workflows/tests.yml)
+
 <!-- Images -->
 [alife]: examples/images/alife.png "A Life Graph"
 [grid]: examples/images/grid.png "A Simple Grid"
