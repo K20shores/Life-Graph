@@ -42,7 +42,7 @@ this code for free use by everyone else.
 
 ```python
 # A simple life graph
-https://github.com/K20shores/Life-Graph/blob/bc3da6d79342d6bf5b04263d0a136f05d016fd4f/test/tests.py#L22-L24
+![](https://github.com/K20shores/Life-Graph/blob/bc3da6d79342d6bf5b04263d0a136f05d016fd4f/test/tests.py#L22-L24)
 
 from lifegraph.lifegraph import Lifegraph, Papersize, random_color, Point, Side
 from datetime import date, datetime
