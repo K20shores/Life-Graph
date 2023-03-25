@@ -2,17 +2,17 @@
 [![CI Status](https://github.com/k20shores/Life-Graph/actions/workflows/tests.yml/badge.svg)](https://github.com/k20shores/Life-Graph/actions/workflows/tests.yml)
 
 <!-- Images -->
-[alife]: examples/images/alife.png "A Life Graph"
-[grid]: examples/images/grid.png "A Simple Grid"
-[grid_with_title]: examples/images/grid_with_title.png "With a Title"
-[grid_with_watermark]: examples/images/grid_with_watermark.png "With a Watermark"
-[grid_maxage]: examples/images/grid_maxage.png "Adding the max age"
-[grid_life_event]: examples/images/grid_life_event.png "A life event"
-[grid_era]: examples/images/grid_era.png "An era"
-[grid_era_span]: examples/images/grid_era_span.png "An era span"
-[grid_add_image]: examples/images/grid_add_image.png "Add an image"
-[grid_customization]: examples/images/grid_customization.png "Customize the grid"
-[annotation_placement]: examples/images/placement.png "Annotation placement"
+[alife]: test/images/alife.png "A Life Graph"
+[grid]: test/images/grid.png "A Simple Grid"
+[grid_with_title]: test/images/grid_with_title.png "With a Title"
+[grid_with_watermark]: test/images/grid_with_watermark.png "With a Watermark"
+[grid_maxage]: test/images/grid_maxage.png "Adding the max age"
+[grid_life_event]: test/images/grid_life_event.png "A life event"
+[grid_era]: test/images/grid_era.png "An era"
+[grid_era_span]: test/images/grid_era_span.png "An era span"
+[grid_add_image]: test/images/grid_add_image.png "Add an image"
+[grid_customization]: test/images/grid_customization.png "Customize the grid"
+[annotation_placement]: test/images/placement.png "Annotation placement"
 
 # Table of Contents
 1. [Life Graph Inspriation](#life-graph-inspiration)
@@ -42,8 +42,11 @@ this code for free use by everyone else.
 
 ```python
 # A simple life graph
-![](https://github.com/K20shores/Life-Graph/blob/bc3da6d79342d6bf5b04263d0a136f05d016fd4f/test/tests.py#L22-L24)
+https://github.com/K20shores/Life-Graph/blob/bc3da6d79342d6bf5b04263d0a136f05d016fd4f/test/tests.py#L22-L24
+```
 
+
+```
 from lifegraph.lifegraph import Lifegraph, Papersize, random_color, Point, Side
 from datetime import date, datetime
 
