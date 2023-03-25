@@ -307,17 +307,30 @@ class EraSpan(Era):
 class Lifegraph:
     """This class will represent your life as a graph of boxes"""
 
-    def __init__(self, birthdate, label_space_epsilon=0.2, max_age=90, axes_rect = [.25, .1, .5, .8], other_params = None):
+    rcParams = {
+        'figure.dpi' : 300,
+        'figure.figsize' : [11.7, 16.5],
+        'lines.markeredgecolor' : 'black',
+        'lines.markeredgewidth' : 0.5,
+        'lines.markersize' : 5,
+        'lines.linestyle' : 'none',
+        'lines.marker' : 's',
+        'markers.fillstyle' : 'none',
+    }
+
+    def __init__(self, birthdate, label_space_epsilon=0.2, max_age=90, axes_rect = [.25, .1, .5, .8], rcParams = None, other_params = None):
         """Initalize the life graph
 
         :param birthdate: The date to start the graph from
         :param label_space_epsilon: (Default value = .2) The minimum amount of space allowed between annotation text objects
         :param max_age: (Default value = 90) The ending age of the graph
         :param axes_rect: (Default value = [.25, .1, .5, .8]) The dimensions [left, bottom, width, height] of the axes instance passed to matplotlib.figure.Figure.add_axes
+        :param rcParams: (Default value = None) rcParams that you would like to change about matplotlib. Not specifying any means that Lifegraph.rcParams will be used
         :param other_params: (Default value = None) Extra settings that control various aspects of plotting.
 
         """
-        plt.rcParams['figure.dpi'] = 300
+        plt.rcParams.update(Lifegraph.rcParams if rcParams is None else rcParams)
+
         if birthdate is None or not isinstance(birthdate, datetime.date):
             raise ValueError("birthdate must be a valid datetime.date object")
 
@@ -558,41 +571,44 @@ class Lifegraph:
     #region Private drawing methods
     def __draw(self):
         """Internal, trigger drawing of the graph"""
-        self.fig = plt.figure()
-        self.ax = self.fig.add_axes(self.axes_rect)
+        fig = plt.figure()
+        ax = fig.add_axes(self.axes_rect)
+        self.fig = fig
+        self.ax = ax
 
         xs = np.arange(1, self.xmax+1)
         ys = [np.arange(0, self.ymax) for i in range(self.xmax)]
 
-        self.ax.plot(xs, ys, fillstyle='none', linestyle='none', marker='s')
+        self.ax.plot(xs, ys)
+
+        ax.spines[:].set_visible(False)
 
         self.__draw_xaxis()
         self.__draw_yaxis()
 
         self.__draw_annotations()
-        self.__draw_eras()
-        self.__draw_era_spans()
-        self.__draw_watermark()
-        self.__draw_title()
-        self.__draw_image()
-        self.__draw_max_age()
+        # self.__draw_eras()
+        # self.__draw_era_spans()
+        # self.__draw_watermark()
+        # self.__draw_title()
+        # self.__draw_image()
+        # self.__draw_max_age()
 
         self.ax.set_aspect('equal', share=True)
 
     def __draw_xaxis(self):
         """Internal, draw the components of the x-axis"""
         self.ax.set_xlim(self.xlims)
-        # put x ticks on top
         xticks = [1]
-        xticks.extend(range(5, self.xmax+5, 5))
+        xticks.extend(range(5, self.xmax, 5))
         self.ax.set_xticks(xticks)
         self.ax.set_xticklabels(xticks)
         self.ax.set_xlabel(self.xaxis_label)
+        self.ax.set_xlim([0.5, self.xmax + 0.5])
 
     def __draw_yaxis(self):
         """Internal, draw the components of the y-axis"""
         self.ax.set_ylim(self.ylims)
-        # set y ticks
         yticks = [*range(0, self.ymax, 5)]
         self.ax.set_yticks(yticks)
         self.ax.set_ylabel(self.yaxis_label)
