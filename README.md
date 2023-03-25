@@ -14,20 +14,6 @@
 [grid_customization]: test/images/grid_customization.png "Customize the grid"
 [annotation_placement]: test/images/placement.png "Annotation placement"
 
-# Table of Contents
-1. [Life Graph Inspriation](#life-graph-inspiration)
-1. [A Life Graph Example](#a-life-graph-example)
-1. [A Simple Grid](#a-simple-grid)
-1. [Add a Title](#add-a-title)
-1. [Add a Watermark](#add-a-watermark)
-1. [Display and Change the Max Age](#display-and-change-the-max-age)
-1. [Adding a Life event](#adding-a-life-event)
-1. [Adding an Era](#adding-an-era)
-1. [Adding an Era Span](#adding-an-era-span)
-1. [Add an Image](#add-an-image)
-1. [Customize the Grid](#customize-the-grid)
-1. [Annotation Placement](#annotation-placement)
-
 # Life Graph Inspiration
 Inspired by [this post](https://waitbutwhy.com/2014/05/life-weeks.html), I decided I wanted to make my own graph of my life.
 In the comments on that post, there are many other graphs available, but most of them add lots of different things that I did
@@ -39,55 +25,15 @@ this code for free use by everyone else.
 
 # A Life Graph Example
 ![A Life Graph][alife]
-
-https://github.com/K20shores/Life-Graph/blob/bc3da6d79342d6bf5b04263d0a136f05d016fd4f/test/tests.py#L22-L24
-
-
-```
-from lifegraph.lifegraph import Lifegraph, Papersize, random_color, Point, Side
-from datetime import date, datetime
-
-birthday = date(1995, 11, 20)
-g = Lifegraph(birthday, dpi=300, size=Papersize.Letter, label_space_epsilon=1)
-
-g.add_life_event('Won an award', date(2013, 11, 20), '#014421')
-g.add_life_event('Hiked the Rocky Mountains', date(2014, 2, 14), '#DC143C', hint=(25, -3))
-g.add_life_event('Ran first marathon', date(2017, 9, 11), '#990000')
-g.add_life_event('Built a canoe', date(2018, 12, 8), '#87CEFA')
-g.add_life_event('Started working at\nEcosia', date(2019, 1, 7), '#00008B')
-
-now = datetime.utcnow()
-g.add_life_event('Today', date(now.year, now.month, now.day), (0.75, 0, 0.75))
-
-g.add_era("Elementary School", date(2001, 8, 24), date(2007, 6, 5), 'r')
-g.add_era("Intermediate School", date(2007, 8, 24), date(2008, 6, 5), '#00838f')
-g.add_era("Middle School", date(2008, 8, 24), date(2010, 6, 5), 'b')
-g.add_era("High School", date(2010, 8, 24), date(2014, 6, 5), '#00838f')
-g.add_era("College", date(2014, 9, 1), date(2018, 12, 14), (80/255, 0, 0), side=Side.LEFT)
-
-g.add_era_span("Longest vacation ever", date(2016, 8, 22), date(2016, 12, 16), '#D2691E', hint=Point(53, 28))
-
-g.add_title("The life of Someone")
-
-g.show_max_age_label()
-
-g.save("images/alife.png")
-```
+https://github.com/K20shores/Life-Graph/blob/69cd0d1e6fb4f5ade2eb71ca1c6b2f1fb5955337/test/tests.py#L88-L111
 
 # A Simple Grid
 To make a grid of squares, this is all you need.
 By default, the axes instance is constrained to a smaller portion of the page to make
 room for annotations on the edge of the graph. The axes_rect argument ensures that the graph
 takes up more room.
-```
-from lifegraph.lifegraph import Lifegraph, Papersize
-from datetime import date
 
-birthday = date(1990, 11, 1)
-g = Lifegraph(birthday, dpi=300, size=Papersize.A4, axes_rect=[.1, .1, .8, .8])
-g.save("grid.png")
-```
-
+https://github.com/K20shores/Life-Graph/blob/bc3da6d79342d6bf5b04263d0a136f05d016fd4f/test/tests.py#L22-L24
 ![A simple grid][grid]
 
 # Add a Title

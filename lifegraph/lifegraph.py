@@ -322,7 +322,7 @@ class Lifegraph:
 
     # settings specific to lifegraph
     default_settings = {
-        "maxage.fontsize": 20,
+        "maxage.fontsize": 10,
         "annotation.marker.size": 2.0,
         "annotation.edge.width": 0.5,
         "annotation.line.width": 0.5,
