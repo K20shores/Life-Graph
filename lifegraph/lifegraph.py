@@ -335,18 +335,19 @@ class Lifegraph:
         "watermark.fontsize": 60
     }
 
-    def __init__(self, birthdate, label_space_epsilon=0.2, max_age=90, axes_rect = [.25, .1, .5, .8], rcParams = None, other_params = None):
+    def __init__(self, birthdate, label_space_epsilon=0.2, max_age=90, axes_rect = [.25, .1, .5, .8], rcParams = {}, other_params = {}):
         """Initalize the life graph
 
         :param birthdate: The date to start the graph from
         :param label_space_epsilon: (Default value = .2) The minimum amount of space allowed between annotation text objects
         :param max_age: (Default value = 90) The ending age of the graph
         :param axes_rect: (Default value = [.25, .1, .5, .8]) The dimensions [left, bottom, width, height] of the axes instance passed to matplotlib.figure.Figure.add_axes
-        :param rcParams: (Default value = None) rcParams that you would like to change about matplotlib. Not specifying any means that Lifegraph.rcParams will be used
-        :param other_params: (Default value = None) Extra settings that control various aspects of plotting.
+        :param rcParams: (Default value = {}) rcParams that you would like to change about matplotlib. Not specifying any means that Lifegraph.rcParams will be used
+        :param other_params: (Default value = {}) Extra settings that control various aspects of plotting.
 
         """
-        plt.rcParams.update(Lifegraph.rcParams if rcParams is None else rcParams)
+        plt.rcParams.update(Lifegraph.rcParams)
+        plt.rcParams.update(rcParams)
 
         if birthdate is None or not isinstance(birthdate, datetime.date):
             raise ValueError("birthdate must be a valid datetime.date object")
@@ -386,9 +387,8 @@ class Lifegraph:
         self.eras = []
         self.era_spans = []
 
-        self.settings = Lifegraph.default_settings 
-        if other_params is not None:
-            self.settings.update(other_params)
+        self.settings = Lifegraph.default_settings
+        self.settings.update(other_params)
 
     #region Public drawing methods
     def show_max_age_label(self):

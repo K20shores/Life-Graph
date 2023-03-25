@@ -40,6 +40,10 @@ this code for free use by everyone else.
 # A Life Graph Example
 ![A Life Graph][alife]
 
+```
+https://github.com/K20shores/Life-Graph/blob/bc3da6d79342d6bf5b04263d0a136f05d016fd4f/test/tests.py#L22-L24
+```
+
 The code:
 ```
 from lifegraph.lifegraph import Lifegraph, Papersize, random_color, Point, Side

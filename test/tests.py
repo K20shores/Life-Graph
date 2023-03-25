@@ -72,5 +72,15 @@ class TestLifeGraph(unittest.TestCase):
         g.save(path)
         # TODO: add a check for this
 
+    def test_rc_params(self):
+        birthday = date(1990, 11, 1)
+        rcParams = {}
+        rcParams["lines.marker"] = 'v'
+        rcParams["lines.markersize"] = 2.0
+
+        g = Lifegraph(birthday, max_age=100, rcParams=rcParams)
+        g.save("images/grid_customization.png")
+        # TODO: add a check for this
+
 if __name__ == '__main__':
     unittest.main()
