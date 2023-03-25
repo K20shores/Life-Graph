@@ -70,8 +70,7 @@ class TestLifeGraph(unittest.TestCase):
         g.add_life_event('My first paycheck', date(2006, 8, 23))
         g.add_life_event('Graduated\nhighschool', date(2008, 6, 2), color="#00FF00", side=Side.LEFT)
         g.add_life_event('First car purchased', date(2010, 7, 14), color = (1, 0, 0))
-        path = "images/grid_life_event.png"
-        g.save(path)
+        g.save("images/grid_life_event.png")
         # TODO: add a check for this
 
     def test_rc_params(self):
