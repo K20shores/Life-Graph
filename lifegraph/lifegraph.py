@@ -4,15 +4,13 @@ from enum import Enum
 from matplotlib import colors as mcolors
 from matplotlib.transforms import Bbox
 import datetime
-import gc
 import matplotlib.image as mpimg
 import matplotlib.lines as mlines
-import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import random
 
-from .configuration import LifegraphParams, Papersize
+from .paper_sizes import Papersize
 
 exclude = []
 colors = [(key, val)
@@ -309,24 +307,53 @@ class EraSpan(Era):
 class Lifegraph:
     """This class will represent your life as a graph of boxes"""
 
-    def __init__(self, birthdate, size=Papersize.A3, dpi=300, label_space_epsilon=0.2, max_age=90, axes_rect = [.25, .1, .5, .8]):
+    # some recommended settings
+    rcParams = {
+        'figure.dpi' : 300,
+        'lines.markeredgecolor' : 'black',
+        'lines.markeredgewidth' : 0.25,
+        'lines.markersize' : 1,
+        'lines.linestyle' : 'none',
+        'lines.marker' : 's',
+        'markers.fillstyle' : 'none',
+        'xtick.major.width' : 0.25,
+        'ytick.major.width' : 0.25,
+    }
+
+    # settings specific to lifegraph
+    default_settings = {
+        "maxage.fontsize": 10,
+        "annotation.marker.size": 2.0,
+        "annotation.edge.width": 0.5,
+        "annotation.line.width": 0.5,
+        "annotation.shrinkA": 0,
+        "annotation.left.offset": 20,
+        "annotation.right.offset": 5,
+        "era.span.linestyle": "-",
+        "era.span.markersize": 0,
+        "era.line.linewidth": 1,
+        "watermark.fontsize": 60
+    }
+
+    def __init__(self, birthdate, label_space_epsilon=0.2, max_age=90, axes_rect = [.25, .1, .5, .8], rcParams = {}, other_params = {}):
         """Initalize the life graph
 
         :param birthdate: The date to start the graph from
-        :param size:  (Default value = Papersize.A3) A papersize in inches
-        :param dpi: (Default value = 300) Dots per inch
         :param label_space_epsilon: (Default value = .2) The minimum amount of space allowed between annotation text objects
         :param max_age: (Default value = 90) The ending age of the graph
         :param axes_rect: (Default value = [.25, .1, .5, .8]) The dimensions [left, bottom, width, height] of the axes instance passed to matplotlib.figure.Figure.add_axes
+        :param rcParams: (Default value = {}) rcParams that you would like to change about matplotlib. Not specifying any means that Lifegraph.rcParams will be used
+        :param other_params: (Default value = {}) Extra settings that control various aspects of plotting.
 
         """
+        plt.rcParams.update(Lifegraph.rcParams)
+        plt.rcParams.update(rcParams)
+
         if birthdate is None or not isinstance(birthdate, datetime.date):
             raise ValueError("birthdate must be a valid datetime.date object")
 
         self.birthdate = birthdate
 
-        self.settings = LifegraphParams(size)
-        self.settings.rcParams["figure.dpi"] = dpi
         self.axes_rect = axes_rect
 
         self.renderer = None
@@ -360,59 +387,10 @@ class Lifegraph:
         self.eras = []
         self.era_spans = []
 
+        self.settings = Lifegraph.default_settings
+        self.settings.update(other_params)
+
     #region Public drawing methods
-    def format_x_axis(self, text=None, positionx=None, positiony=None, color=None, fontsize=None):
-        """Format the x axis. This method is required.
-
-        :param text: (Default value = None), If present, changes the text of the x-axis
-        :param positionx: (Default value = None) If present, changes the location of the x postion of the x-axis (in axes coordaintes)
-        :param positiony: (Default value = None) If present, changes the location of the y postion of the x-axis (in axes coordaintes)
-        :param color: (Default value = None) A matplotlib color
-        :param fontsize: (Default value = None) A matplotlib fontsize
-
-        """
-        if text is not None:
-            self.xaxis_label = text
-
-        x, y = self.settings.otherParams["xlabel.position"]
-        if positionx is not None:
-            x = positionx
-        if positiony is not None:
-            y = positiony
-        self.settings.otherParams["xlabel.position"] = (x, y)
-
-        if color is not None:
-            self.settings.otherParams["xlabel.color"] = color
-
-        if fontsize is not None:
-            self.settings.otherParams["xlabel.fontsize"] = fontsize
-
-    def format_y_axis(self, text=None, positionx=None, positiony=None, color=None, fontsize=None):
-        """Format the y axis. This method is required.
-
-        :param text: (Default value = None), If present, changes the text of the y-axis
-        :param positionx: (Default value = None) If present, changes the location of the x postion of the y-axis (in axes coordaintes)
-        :param positiony: (Default value = None) If present, changes the location of the y postion of the y-axis (in axes coordaintes)
-        :param color: (Default value = None) A matplotlib color
-        :param fontsize: (Default value = None) A matplotlib fontsize
-
-        """
-        if text is not None:
-            self.xaxis_label = text
-
-        x, y = self.settings.otherParams["ylabel.position"]
-        if positionx is not None:
-            x = positionx
-        if positiony is not None:
-            y = positiony
-        self.settings.otherParams["ylabel.position"] = (x, y)
-
-        if color is not None:
-            self.settings.otherParams["ylabel.color"] = color
-
-        if fontsize is not None:
-            self.settings.otherParams["ylabel.fontsize"] = fontsize
-
     def show_max_age_label(self):
         """Places the max age on the bottom right of the plot"""
         self.draw_max_age = True
@@ -568,6 +546,10 @@ class Lifegraph:
         self.image_name = image_name
         self.image_alpha = alpha
 
+    def draw(self):
+        """Draw the grpah"""
+        self.__draw()
+
     def show(self):
         """Show the grpah"""
         self.__draw()
@@ -578,29 +560,31 @@ class Lifegraph:
         self.fig.clf()
         plt.close()
 
-    def save(self, name, transparent=False):
+    def save(self, name, **kwargs):
         """Save the graph.
 
         :param name: The name and location the file should be saved at
-        :param transparent: Default value = False)
+        :param kwargs: keyword arguments passed to matplotlib.pyplot.savefig
 
         """
         self.__draw()
-        plt.savefig(name, transparent=transparent)
+        plt.savefig(name, **kwargs)
     #endregion Public drawing methods
 
     #region Private drawing methods
     def __draw(self):
         """Internal, trigger drawing of the graph"""
-        plt.rcParams.update(self.settings.rcParams)
-
-        self.fig = plt.figure()
-        self.ax = self.fig.add_axes(self.axes_rect)
+        fig = plt.figure()
+        ax = fig.add_axes(self.axes_rect)
+        self.fig = fig
+        self.ax = ax
 
         xs = np.arange(1, self.xmax+1)
         ys = [np.arange(0, self.ymax) for i in range(self.xmax)]
 
         self.ax.plot(xs, ys)
+
+        ax.spines[:].set_visible(False)
 
         self.__draw_xaxis()
         self.__draw_yaxis()
@@ -618,32 +602,19 @@ class Lifegraph:
     def __draw_xaxis(self):
         """Internal, draw the components of the x-axis"""
         self.ax.set_xlim(self.xlims)
-        # put x ticks on top
         xticks = [1]
-        xticks.extend(range(5, self.xmax+5, 5))
-        fs = self.settings.rcParams["axes.labelsize"] if self.settings.otherParams[
-            "xlabel.fontsize"] is None else self.settings.otherParams["xlabel.fontsize"]
-        color = self.settings.rcParams["axes.labelcolor"] if self.settings.otherParams[
-            "xlabel.color"] is None else self.settings.otherParams["xlabel.color"]
+        xticks.extend(range(5, self.xmax, 5))
         self.ax.set_xticks(xticks)
-        self.ax.set_xticklabels(xticks[:-1])
-        self.ax.set_xlabel(self.xaxis_label, fontsize=fs, color=color)
-        self.ax.xaxis.set_label_coords(
-            *self.settings.otherParams["xlabel.position"])
+        self.ax.set_xticklabels(xticks)
+        self.ax.set_xlabel(self.xaxis_label)
+        self.ax.set_xlim([0.5, self.xmax + 0.5])
 
     def __draw_yaxis(self):
         """Internal, draw the components of the y-axis"""
         self.ax.set_ylim(self.ylims)
-        # set y ticks
         yticks = [*range(0, self.ymax, 5)]
-        fs = self.settings.rcParams["axes.labelsize"] if self.settings.otherParams[
-            "ylabel.fontsize"] is None else self.settings.otherParams["ylabel.fontsize"]
-        color = self.settings.rcParams["axes.labelcolor"] if self.settings.otherParams[
-            "ylabel.color"] is None else self.settings.otherParams["ylabel.color"]
         self.ax.set_yticks(yticks)
-        self.ax.set_ylabel(self.yaxis_label, fontsize=fs, color=color)
-        self.ax.yaxis.set_label_coords(
-            *self.settings.otherParams["ylabel.position"])
+        self.ax.set_ylabel(self.yaxis_label)
         self.ax.invert_yaxis()
 
     def __draw_annotations(self):
@@ -654,11 +625,11 @@ class Lifegraph:
         """
         final = self.__resolve_annotation_conflicts(self.annotations)
 
-        shrinkB = self.settings.rcParams["lines.markersize"]+self.settings.rcParams["lines.markeredgewidth"]
+        shrinkB = plt.rcParams["lines.markersize"]+plt.rcParams["lines.markeredgewidth"]
         for a in final:
             if a.put_circle_around_point:
                 self.ax.plot(a.event_point.x, a.event_point.y, marker='o', markeredgecolor=a.color,
-                             ms=self.settings.rcParams["lines.markersize"]*2.0)
+                             ms=plt.rcParams["lines.markersize"]*2.0)
 
             if a.marker is not None:
                 self.ax.plot(
@@ -669,11 +640,11 @@ class Lifegraph:
                              arrowprops=dict(arrowstyle='-',
                                              connectionstyle='arc3',
                                              color=a.color,
-                                             shrinkA=self.settings.otherParams["annotation.shrinkA"],
+                                             shrinkA=self.settings["annotation.shrinkA"],
                                              shrinkB=shrinkB,
                                              # search for 'relpos' on https://matplotlib.org/tutorials/text/annotations.html
                                              relpos=a.relpos,
-                                             linewidth=self.settings.otherParams["annotation.line.width"]))
+                                             linewidth=self.settings["annotation.line.width"]))
 
     def __draw_eras(self):
         """Internal, draw all of the eras on the graph"""
@@ -706,9 +677,9 @@ class Lifegraph:
         for era in self.era_spans:
             radius = .5
             circle1 = plt.Circle((era.start.x, era.start.y), radius,
-                                 color=era.color, fill=False, lw=self.settings.otherParams["annotation.edge.width"])
+                                 color=era.color, fill=False, lw=self.settings["annotation.edge.width"])
             circle2 = plt.Circle((era.end.x, era.end.y), radius,
-                                 color=era.color, fill=False, lw=self.settings.otherParams["annotation.edge.width"])
+                                 color=era.color, fill=False, lw=self.settings["annotation.edge.width"])
             self.ax.add_artist(circle1)
             self.ax.add_artist(circle2)
 
@@ -740,22 +711,22 @@ class Lifegraph:
                 self.ax.plot(era.end_marker.x, era.end_marker.y, color=era.end_marker.color, marker=era.end_marker.marker,
                              fillstyle=era.end_marker.fillstyle)
 
-            l = mlines.Line2D([x1, x2], [y1, y2], color=era.color, linestyle=self.settings.otherParams["era.span.linestyle"],
-                              markersize=self.settings.otherParams["era.span.markersize"], linewidth=self.settings.otherParams["annotation.line.width"])
+            l = mlines.Line2D([x1, x2], [y1, y2], color=era.color, linestyle=self.settings["era.span.linestyle"],
+                              markersize=self.settings["era.span.markersize"], linewidth=self.settings["annotation.line.width"])
             self.ax.add_line(l)
 
     def __draw_watermark(self):
         """Internal, draw the watermakr"""
         if self.watermark_text is not None:
             self.fig.text(0.5, 0.5, self.watermark_text,
-                          fontsize=self.settings.otherParams["watermark.fontsize"], color='gray',
+                          fontsize=self.settings["watermark.fontsize"], color='gray',
                           ha='center', va='center', alpha=0.3, rotation=65, transform=self.ax.transAxes)
 
     def __draw_title(self):
         """Internal, draw the title"""
         if self.title is not None:
-            self.fig.suptitle(
-                self.title, y=self.settings.otherParams["figure.title.yposition"])
+            title = self.fig.suptitle( self.title )
+            self._last_title = title.get_text()
 
     def __draw_image(self):
         """Internal, draw the image"""
@@ -768,7 +739,7 @@ class Lifegraph:
     def __draw_max_age(self):
         if self.draw_max_age:
             self.ax.text(self.xmax+3, self.ymax, str(self.ymax),
-                         fontsize=self.settings.otherParams["maxage.fontsize"],
+                         fontsize=self.settings["maxage.fontsize"],
                          ha='center', va='bottom', transform=self.ax.transData)
 
     def __resolve_annotation_conflicts(self, annotations):
@@ -799,12 +770,12 @@ class Lifegraph:
             # to preserve hint values, only set the x value if it is inside the graph
             # or if it is not at least as far as the offset
             if a.y >= 0 and a.y <= self.ymax:
-                if ((a.x >= self.xmax / 2) and (a.x < self.xmax)) or (a.x >= self.xmax and a.x < self.xmax + self.settings.otherParams["annotation.right.offset"]):
+                if ((a.x >= self.xmax / 2) and (a.x < self.xmax)) or (a.x >= self.xmax and a.x < self.xmax + self.settings["annotation.right.offset"]):
                     a.x = self.xmax + \
-                        self.settings.otherParams["annotation.right.offset"]
-                elif ((a.x >= 0) and (a.x < self.xmax / 2)) or (a.x <= self.xmin and a.x > self.xmin - self.settings.otherParams["annotation.left.offset"]):
+                        self.settings["annotation.right.offset"]
+                elif ((a.x >= 0) and (a.x < self.xmax / 2)) or (a.x <= self.xmin and a.x > self.xmin - self.settings["annotation.left.offset"]):
                     a.x = self.xmin - \
-                        self.settings.otherParams["annotation.left.offset"] - width
+                        self.settings["annotation.left.offset"] - width
                 a.bbox.x0 = a.x
                 a.bbox.x1 = a.x + width
                 if (a.x >= self.xmax / 2):

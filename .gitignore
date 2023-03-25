@@ -139,6 +139,6 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
-me.py
 lifegraph.code-workspace
 lifegraph-before*
+personal/
