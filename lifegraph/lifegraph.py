@@ -10,8 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 
-from .paper_sizes import Papersize
-
 exclude = []
 colors = [(key, val)
           for key, val in mcolors.BASE_COLORS.items() if val not in exclude]
@@ -107,7 +105,7 @@ class Marker(Point):
 class Annotation(Point):
     """A class to hold the text of an annotation with methods to help layout the text."""
 
-    def __init__(self, date, text, label_point, color='black', bbox=None, event_point=None, put_circle_around_point=True, marker=None, relpos=(.5, .5)):
+    def __init__(self, date, text, label_point, color='black', bbox=None, event_point=None, put_circle_around_point=True, marker=None, relpos=(.5, .5), fontsize=None):
         """Initialize the Annotation class. THe base is a Point class.
 
         :param date: When the event occurred
@@ -120,6 +118,7 @@ class Annotation(Point):
         :param shrink: (Default value = 0) How much from the event point should the arrow stop
         :param marker: (Default value = None) A Marker class
         :param relpos: (Default value = (.5, .5)) The position that the annotation arrow innitates from on the label, see https://matplotlib.org/tutorials/text/annotations.html
+        :param fontsize: (Default value = None) The fontsize of the displayed text. If None, the font size is whatever matplotlib is configured to use
 
         """
         super().__init__(label_point.x, label_point.y)
@@ -131,6 +130,7 @@ class Annotation(Point):
         self.put_circle_around_point = put_circle_around_point
         self.marker = marker
         self.relpos = relpos
+        self.fontsize = fontsize
 
     def set_bbox(self, bbox):
         """Set the bounding box of an annotation
@@ -335,16 +335,16 @@ class Lifegraph:
         "watermark.fontsize": 60
     }
 
-    def __init__(self, birthdate, label_space_epsilon=0.2, max_age=90, axes_rect = [.25, .1, .5, .8], rcParams = {}, other_params = {}):
+    def __init__(self, birthdate, ax=None, label_space_epsilon=0.2, max_age=90, axes_rect = [.25, .1, .5, .8], rcParams = {}, other_params = {}):
         """Initalize the life graph
 
         :param birthdate: The date to start the graph from
+        :param ax: (Default value=None) A matplotlib axes instance. If you don't provide one, one will be created for you.
         :param label_space_epsilon: (Default value = .2) The minimum amount of space allowed between annotation text objects
         :param max_age: (Default value = 90) The ending age of the graph
         :param axes_rect: (Default value = [.25, .1, .5, .8]) The dimensions [left, bottom, width, height] of the axes instance passed to matplotlib.figure.Figure.add_axes
         :param rcParams: (Default value = {}) rcParams that you would like to change about matplotlib. Not specifying any means that Lifegraph.rcParams will be used
         :param other_params: (Default value = {}) Extra settings that control various aspects of plotting.
-
         """
         plt.rcParams.update(Lifegraph.rcParams)
         plt.rcParams.update(rcParams)
@@ -390,12 +390,20 @@ class Lifegraph:
         self.settings = Lifegraph.default_settings
         self.settings.update(other_params)
 
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_axes(self.axes_rect)
+        else:
+            fig = ax.figure
+        self.fig = fig
+        self.ax = ax
+
     #region Public drawing methods
     def show_max_age_label(self):
         """Places the max age on the bottom right of the plot"""
         self.draw_max_age = True
 
-    def add_life_event(self, text, date, color=None, hint=None, side=None, color_square=True):
+    def add_life_event(self, text, date, color=None, hint=None, side=None, color_square=True, fontsize=None):
         """Label an event in your life
 
         :param text: The text the should appear for the life event
@@ -404,6 +412,7 @@ class Lifegraph:
         :param hint: (Default value = None) Mutually exclusive with side. Not required. If the default placement is not desired. A Point may be provided to help the graph decide where to place the label of the event.
         :param side: (Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
         :param color_square: (Default value = True) Colors the sqaure on the graph the same color as the text if True. The sqaure is the default color of the graph squares otherwise
+        :param fontsize: (Default value = None) The fontsize of the displayed text. If None, the font size is whatever matplotlib is configured to use
 
         """
         if (date < self.birthdate or date > (relativedelta(years=self.ymax) + self.birthdate)):
@@ -423,10 +432,10 @@ class Lifegraph:
             marker = Marker(position.x, position.y, color=color)
 
         a = Annotation(date, text, label_point=label_point, color=color,
-                       event_point=Point(position.x, position.y), marker=marker)
+                       event_point=Point(position.x, position.y), marker=marker, fontsize=fontsize)
         self.annotations.append(a)
 
-    def add_era(self, text, start_date, end_date, color=None, side=None, alpha=0.3):
+    def add_era(self, text, start_date, end_date, color=None, side=None, alpha=0.3, fontsize=None):
         """Color in a section of your life
 
         :param text: The label text for the era
@@ -435,6 +444,7 @@ class Lifegraph:
         :param color: A color useable by any matplotlib object
         :param side: (Default value = None) Mutually exclusive with hint. Not required. If not provided, the side is determined by the date. If provided, this value will put the label on the given side of the plot
         :param alpha: (Default value = 0.3) the alpha value of the color
+        :param fontsize: (Default value = None) The fontsize of the displayed text. If None, the font size is whatever matplotlib is configured to use
 
         """
         if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
@@ -462,10 +472,10 @@ class Lifegraph:
         middle_date = start_date + (end_date - start_date)/2
 
         a = Annotation(middle_date, text, label_point=label_point, color=color,
-                       event_point=label_point, put_circle_around_point=False)
+                       event_point=label_point, put_circle_around_point=False, fontsize=fontsize)
         self.annotations.append(a)
 
-    def add_era_span(self, text, start_date, end_date, color=None, hint=None, side=None, color_start_and_end_markers=False):
+    def add_era_span(self, text, start_date, end_date, color=None, hint=None, side=None, color_start_and_end_markers=False, fontsize=None):
         """Add a dumbbell around a section of your life
 
         :param text: The text labeling the span
@@ -475,6 +485,7 @@ class Lifegraph:
         :param hint: (Default value = None) Mutually exclusive with side, a Point indicating where the label should be placed. This position will be honored if possible
         :param side: (Default value = None) Mutually exclusive with hint. If Side.LEFT, the label will be on the left of the graph. Is Side.RIGHT, the label will be placed on the ride side of the graph
         :param color_start_and_end_markers: Default value = False) Colors the sqaures indicating the start and end date on the graph the same color as the text if True. The sqaures are the default color of the graph squares otherwise
+        :param fontsize: (Default value = None) The fontsize of the displayed text. If None, the font size is whatever matplotlib is configured to use
 
         """
         if (start_date < self.birthdate or start_date > (relativedelta(years=self.ymax) + self.birthdate)):
@@ -509,7 +520,7 @@ class Lifegraph:
             (start_position.y, end_position.y)))
 
         self.annotations.append(Annotation(middle_date, text, label_point=label_point,
-                                           color=color, event_point=event_point, put_circle_around_point=False))
+                                           color=color, event_point=event_point, put_circle_around_point=False, fontsize=fontsize))
 
     def add_watermark(self, text):
         """Adds a watermark to the graph. 
@@ -547,13 +558,18 @@ class Lifegraph:
         self.image_alpha = alpha
 
     def draw(self):
-        """Draw the grpah"""
-        self.__draw()
+        """Draw the grpah
+        
+        :return: A matplotlib axes instance
+        """
+        return self.__draw()
 
     def show(self):
         """Show the grpah"""
-        self.__draw()
+        ax = self.__draw()
         plt.show()
+
+        return ax
 
     def close(self):
         """Close the graph"""
@@ -574,17 +590,12 @@ class Lifegraph:
     #region Private drawing methods
     def __draw(self):
         """Internal, trigger drawing of the graph"""
-        fig = plt.figure()
-        ax = fig.add_axes(self.axes_rect)
-        self.fig = fig
-        self.ax = ax
-
         xs = np.arange(1, self.xmax+1)
         ys = [np.arange(0, self.ymax) for i in range(self.xmax)]
 
         self.ax.plot(xs, ys)
 
-        ax.spines[:].set_visible(False)
+        self.ax.spines[:].set_visible(False)
 
         self.__draw_xaxis()
         self.__draw_yaxis()
@@ -598,6 +609,8 @@ class Lifegraph:
         self.__draw_max_age()
 
         self.ax.set_aspect('equal', share=True)
+
+        return self.ax
 
     def __draw_xaxis(self):
         """Internal, draw the components of the x-axis"""
@@ -637,6 +650,7 @@ class Lifegraph:
 
             self.ax.annotate(a.text, xy=(a.event_point.x, a.event_point.y), xytext=(a.x, a.y),
                              weight='bold', color=a.color, va='center', ha='left',
+                             fontsize=a.fontsize,
                              arrowprops=dict(arrowstyle='-',
                                              connectionstyle='arc3',
                                              color=a.color,
