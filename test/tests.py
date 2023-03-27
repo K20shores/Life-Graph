@@ -141,5 +141,12 @@ class TestLifeGraph(unittest.TestCase):
         g.save("images/grid_add_image.png")
         # TODO: add a check for this
 
+    def test_can_provide_axis(self):
+        birthday = date(1990, 11, 1)
+        fig, ax = plt.subplots(dpi=300)
+        g = Lifegraph(birthday, ax=ax, max_age=100)
+        g.save("images/axis_provided.png")
+        # TODO: add a check for this
+
 if __name__ == '__main__':
     unittest.main()
