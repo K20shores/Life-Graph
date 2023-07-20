@@ -18,7 +18,7 @@ mccabe==0.6.1
 numpy==1.18.0
 packaging==20.1
 pycodestyle==2.5.0
-Pygments==2.7.4
+Pygments==2.15.0
 pylint==2.4.4
 Pyment==0.3.3
 pyparsing==2.4.6
